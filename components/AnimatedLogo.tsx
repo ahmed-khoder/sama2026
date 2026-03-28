@@ -1,21 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useId } from 'react';
 
 interface AnimatedLogoProps {
     className?: string;
-    /** 'auto' = theme-aware (dark on light, white on dark). 'light' = always white text (for dark backgrounds). */
-    variant?: 'auto' | 'light';
+    /** 'auto' = theme-aware. 'light' = white text (dark bg). 'dark' = navy text (light bg). */
+    variant?: 'auto' | 'light' | 'dark';
 }
 
 export default function AnimatedLogo({ className = "h-12 w-auto", variant = 'auto' }: AnimatedLogoProps) {
+    const uid = useId();
     const textFill = variant === 'light'
         ? 'fill-white'
-        : 'fill-marine-700 dark:fill-white transition-colors duration-300';
+        : variant === 'dark'
+            ? 'fill-marine-700'
+            : 'fill-marine-700 dark:fill-white transition-colors duration-300';
     return (
         <div className={`relative flex items-center justify-center ${className}`}>
             <svg
-                id="Layer_1"
+                id={`logo_${uid}`}
                 data-name="Layer 1"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 1920 584.7"

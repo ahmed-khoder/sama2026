@@ -8,6 +8,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ToastProvider, useToast } from '@/contexts/ToastContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 // ─── Inner layout (needs access to ToastContext, so lives inside ToastProvider) ──
 function DashboardInner({ children }: { children: React.ReactNode }) {
@@ -18,6 +20,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
   const { success, error: toastError } = useToast();
+  const { user, loading: authLoading, networkError } = useAuth();
+  const router = useRouter();
 
   /**
    * Check Odoo connectivity and, if connected, trigger a server-side cache
@@ -72,6 +76,26 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     };
     checkStatus();
   }, []);
+
+  // ── Auth Guard (بعد كل الـ hooks — React يتطلب استدعاء كل الـ hooks بنفس الترتيب) ──
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-950">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
+            {language === 'ar' ? 'جارٍ التحقق من الهوية...' : 'Verifying identity...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── إذا انتهى التحميل ولا يوجد مستخدم → إعادة توجيه ──
+  if (!user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-slate-950">
@@ -220,6 +244,17 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          {/* ── تنبيه فشل الشبكة ── */}
+          {networkError && (
+            <div className="mb-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
+              <XCircle className="w-5 h-5 text-amber-500 shrink-0" />
+              <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">
+                {language === 'ar'
+                  ? 'لا يوجد اتصال بالخادم — بعض العمليات قد لا تعمل. يرجى التحقق من الاتصال.'
+                  : 'No server connection — some operations may not work. Please check your connection.'}
+              </p>
+            </div>
+          )}
           {children}
         </main>
       </div>

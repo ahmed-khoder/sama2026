@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import DynamicLogo from '@/components/DynamicLogo';
+import AnimatedLogo from '@/components/AnimatedLogo';
 
 export default function LoginForm() {
     const [email, setEmail] = useState('');
@@ -85,59 +86,26 @@ export default function LoginForm() {
     };
 
     return (
-        <div className={`min-h-screen flex flex-col md:flex-row bg-white dark:bg-slate-950 ${isRTL ? '' : 'md:flex-row-reverse'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="min-h-screen flex flex-col md:flex-row bg-white" dir="ltr">
 
-            {/* Left Side - Visual & Branding */}
-            <div className="hidden md:flex md:w-1/2 bg-marine-900 relative overflow-hidden items-center justify-center p-12">
-                {/* Background Effects */}
-                <div className="absolute inset-0 opacity-20">
-                    <div className="absolute right-0 top-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1494412574643-35d324698420?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-marine-900 via-marine-800 to-marine-900"></div>
-                </div>
-
-                <div className="relative z-10 text-white max-w-lg">
-                    {/* Company Logo */}
-                    <div className="mb-8">
-                        <DynamicLogo className="h-16 w-auto" variant="light" />
-                    </div>
-                    <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-                        {t.heroTitle} <br /> <span className="text-brand-orange">{t.heroTitleHighlight}</span>
-                    </h1>
-                    <p className={`text-lg text-gray-300 leading-relaxed mb-8 ${isRTL ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-brand-orange`}>
-                        {t.heroDescription}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-6 mt-12 border-t border-white/10 pt-8">
-                        <div>
-                            <h3 className="text-2xl font-bold text-brand-orange mb-1">+10k</h3>
-                            <p className="text-sm text-gray-400">{t.statsShipments}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-white mb-1">24/7</h3>
-                            <p className="text-sm text-gray-400">{t.statsSupport}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Side - Login Form */}
+            {/* LEFT Side - Login Form (دائماً يسار) */}
             <div className="flex-1 flex items-center justify-center p-6 md:p-12">
-                <div className="w-full max-w-md space-y-8">
-                    <div className={`text-center ${isRTL ? 'md:text-right' : 'md:text-left'} mb-10`}>
+                <div className="w-full max-w-md space-y-8" dir={isRTL ? 'rtl' : 'ltr'}>
+                    <div className="mb-10" dir="ltr">
                         <Link href="/" className="inline-block group">
-                            <DynamicLogo className="h-14 w-auto" />
+                            <AnimatedLogo className="h-14 w-60" variant="dark" />
                         </Link>
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-bold text-marine-900 dark:text-white mb-2">{t.loginTitle}</h2>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        <h2 className="text-2xl font-bold text-marine-900 mb-2">{t.loginTitle}</h2>
+                        <p className="text-gray-500 text-sm">
                             {t.loginSubtitle}
                         </p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm font-medium border border-red-100 dark:border-red-900/50">
+                        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100">
                             ⚠️ {error}
                         </div>
                     )}
@@ -145,7 +113,7 @@ export default function LoginForm() {
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-marine-900 dark:text-gray-200 mb-2">
+                                <label className="block text-sm font-semibold text-marine-900 mb-2">
                                     {t.emailLabel}
                                 </label>
                                 <div className="relative group">
@@ -153,7 +121,7 @@ export default function LoginForm() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className={`w-full py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 outline-none transition-all dark:text-white placeholder:text-gray-400 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
+                                        className={`w-full py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 outline-none transition-all text-marine-900 placeholder:text-gray-400 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
                                         placeholder="name@company.com"
                                         required
                                     />
@@ -165,15 +133,15 @@ export default function LoginForm() {
 
                             <div>
                                 <div className="flex justify-between mb-2">
-                                    <label className="block text-sm font-semibold text-marine-900 dark:text-gray-200">{t.passwordLabel}</label>
-                                    <Link href="/auth/forgot-password" className="text-sm font-medium text-marine-500 hover:text-marine-700 dark:text-marine-400 dark:hover:text-marine-300 hover:underline">{t.forgotPassword}</Link>
+                                    <label className="block text-sm font-semibold text-marine-900">{t.passwordLabel}</label>
+                                    <Link href="/auth/forgot-password" className="text-sm font-medium text-marine-500 hover:text-marine-700 hover:underline">{t.forgotPassword}</Link>
                                 </div>
                                 <div className="relative group">
                                     <input
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className={`w-full py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 outline-none transition-all dark:text-white placeholder:text-gray-400 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
+                                        className={`w-full py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 outline-none transition-all text-marine-900 placeholder:text-gray-400 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
                                         placeholder="••••••••"
                                         required
                                     />
@@ -203,8 +171,8 @@ export default function LoginForm() {
                         </button>
                     </form>
 
-                    <div className="pt-6 border-t border-gray-100 dark:border-slate-800 text-center">
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    <div className="pt-6 border-t border-gray-100 text-center">
+                        <p className="text-gray-600 text-sm">
                             {t.newCustomer}{' '}
                             <Link href="/auth/register" className="text-brand-orange font-bold hover:text-brand-darkOrange hover:underline transition-colors">
                                 {t.createAccount}
@@ -216,6 +184,40 @@ export default function LoginForm() {
                     </div>
                 </div>
             </div>
+
+            {/* RIGHT Side - Branding (دائماً يمين) */}
+            <div className="hidden md:flex md:w-1/2 bg-marine-900 relative overflow-hidden items-center p-12">
+                {/* Background Effects */}
+                <div className="absolute inset-0 opacity-20">
+                    <div className="absolute right-0 top-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1494412574643-35d324698420?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-marine-900 via-marine-800 to-marine-900"></div>
+                </div>
+
+                <div className="relative z-10 text-white max-w-lg" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {/* Company Logo */}
+                    <div className="mb-8">
+                        <AnimatedLogo className="h-16 w-64" variant="light" />
+                    </div>
+                    <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+                        {t.heroTitle} <br /> <span className="text-brand-orange">{t.heroTitleHighlight}</span>
+                    </h1>
+                    <p className={`text-lg text-gray-300 leading-relaxed mb-8 ${isRTL ? 'border-r-4 pr-6' : 'border-l-4 pl-6'} border-brand-orange`}>
+                        {t.heroDescription}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-6 mt-12 border-t border-white/10 pt-8">
+                        <div>
+                            <h3 className="text-2xl font-bold text-brand-orange mb-1">+10k</h3>
+                            <p className="text-sm text-gray-400">{t.statsShipments}</p>
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-bold text-white mb-1">24/7</h3>
+                            <p className="text-sm text-gray-400">{t.statsSupport}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     );
 }

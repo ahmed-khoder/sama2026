@@ -28,12 +28,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import DynamicLogo from './DynamicLogo';
 
-// Default user for initial render (SSR)
-const defaultUser = {
-  name: 'زائر',
-  role: 'EMPLOYEE',
-  avatar: 'https://ui-avatars.com/api/?name=Guest&background=gray&color=fff'
-};
+
 
 // Nav items for EMPLOYEE and above (Settings rendered separately, ADMIN-only)
 const employeeItems = [
@@ -63,11 +58,16 @@ interface DashboardSidebarProps {
 export default function DashboardSidebar({ mobileOpen = false, onMobileClose }: DashboardSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { language, t } = useLanguage();
-  const { user: authUser, logout, hasPermission } = useAuth();
+  const { user: authUser, loading: authLoading, logout, hasPermission } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const user = authUser || defaultUser;
+  // ── ترجمة الأدوار ──
+  const roleLabels: Record<string, string> = {
+    ADMIN: language === 'ar' ? 'مدير النظام' : 'Admin',
+    EMPLOYEE: language === 'ar' ? 'موظف' : 'Employee',
+    CLIENT: language === 'ar' ? 'عميل' : 'Client',
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -107,8 +107,9 @@ export default function DashboardSidebar({ mobileOpen = false, onMobileClose }: 
   if (!mounted) return null;
 
   // Select items based on role, then filter by permissions
-  const baseItems = user.role === 'CLIENT' ? clientItems : employeeItems;
-  const sidebarItems = user.role === 'ADMIN'
+  const userRole = authUser?.role || 'EMPLOYEE';
+  const baseItems = userRole === 'CLIENT' ? clientItems : employeeItems;
+  const sidebarItems = userRole === 'ADMIN'
     ? baseItems
     : baseItems.filter(item => hasPermission(item.permission));
 
@@ -183,18 +184,33 @@ export default function DashboardSidebar({ mobileOpen = false, onMobileClose }: 
 
         {/* User Profile Snippet (Collapsed vs Expanded) */}
         <div className={cn("p-4 flex items-center gap-3 border-b border-gray-100 dark:border-slate-800 shrink-0", isCollapsed ? "justify-center" : "")}>
-          <div className="relative">
-            <img src={user.avatar} alt="User" className="w-10 h-10 rounded-full border-2 border-brand-orange" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>
-          </div>
-
-          {!isCollapsed && (
-            <div className="flex-1 overflow-hidden">
-              <h4 className="font-bold text-sm text-marine-900 dark:text-white truncate">{user.name}</h4>
-              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                {user.role}
-              </span>
-            </div>
+          {authLoading || !authUser ? (
+            /* ── حالة التحميل: Skeleton بدلاً من "زائر" ── */
+            <>
+              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-700 animate-pulse" />
+              {!isCollapsed && (
+                <div className="flex-1 overflow-hidden space-y-2">
+                  <div className="h-4 w-24 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" />
+                  <div className="h-3 w-16 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" />
+                </div>
+              )}
+            </>
+          ) : (
+            /* ── المستخدم الحقيقي ── */
+            <>
+              <div className="relative">
+                <img src={authUser.avatar} alt="User" className="w-10 h-10 rounded-full border-2 border-brand-orange" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>
+              </div>
+              {!isCollapsed && (
+                <div className="flex-1 overflow-hidden">
+                  <h4 className="font-bold text-sm text-marine-900 dark:text-white truncate">{authUser.name}</h4>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    {roleLabels[authUser.role] || authUser.role}
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -275,7 +291,7 @@ export default function DashboardSidebar({ mobileOpen = false, onMobileClose }: 
           </button>
 
           {/* Settings — ADMIN only (server also enforces this via middleware) */}
-          {user.role === 'ADMIN' && (
+          {authUser?.role === 'ADMIN' && (
             <Link
               href="/dashboard/settings"
               onClick={onMobileClose}

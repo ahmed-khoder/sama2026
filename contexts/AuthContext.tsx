@@ -18,6 +18,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  networkError: boolean;
   login: (userData: User) => void;
   updateUser: (userData: Partial<User>) => void;
   logout: () => void;
@@ -29,18 +30,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [networkError, setNetworkError] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Restore user info from localStorage (UI data only — token is in HttpOnly cookie)
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
+    // ── localStorage يُستخدم فقط كـ cache مؤقت لمنع الـ flicker ──
+    // السيرفر هو المصدر الوحيد للحقيقة
+    const cachedUser = localStorage.getItem('currentUser');
+    if (cachedUser) {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        if (!parsedUser.avatar) {
-          parsedUser.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(parsedUser.name)}&background=0ea5e9&color=fff`;
-        }
-        setUser(parsedUser);
+        setUser(JSON.parse(cachedUser));
       } catch {
         localStorage.removeItem('currentUser');
       }
@@ -54,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           localStorage.removeItem('currentUser');
         } else {
-          // Optionally sync fresh user data from server
           const data = await res.json();
           if (data.user) {
             const freshUser = {
@@ -65,9 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('currentUser', JSON.stringify(freshUser));
           }
         }
+        setNetworkError(false);
       })
       .catch(() => {
-        // Network error — keep localStorage state as fallback
+        // Network error — نُبقي المستخدم لكن نُشير لفشل الشبكة
+        // لا نمسح الـ user حتى لا يُطرد إذا انقطع الإنترنت مؤقتاً
+        setNetworkError(true);
       })
       .finally(() => {
         setLoading(false);
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, updateUser, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, loading, networkError, login, updateUser, logout, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );
