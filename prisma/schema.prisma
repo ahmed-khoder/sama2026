@@ -1,0 +1,821 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite" // سنستخدم SQLite للتطوير، ويمكن التبديل لـ PostgreSQL للإنتاج
+  url      = env("DATABASE_URL")
+}
+
+// 1. المستخدمون والأدوار
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String    // Hashed
+  name          String?
+  phone         String?
+  role          String    @default("CLIENT") // CLIENT, EMPLOYEE, ADMIN
+  isActive      Boolean   @default(true)
+  avatar        String?   // رابط الصورة الشخصية
+  preferredLanguage String @default("ar") // ar, en
+  theme         String    @default("system") // light, dark, system
+  permissions      String    @default("[]") // JSON array of permission keys e.g. ["view_dashboard","view_shipments"]
+  resetToken       String?   // Hashed reset token for password recovery
+  resetTokenExpiry DateTime? // Token expiry time (1 hour)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // العلاقات
+  clientProfile ClientProfile?
+  auditLogs     AuditLog[]    // الحركات التي قام بها هذا المستخدم
+  managedShipments Shipment[]  @relation("ManagedBy") // الشحنات التي يديرها (للموظفين)
+  blogPosts     BlogPost[]    // المقالات التي كتبها المستخدم
+
+  @@index([role, isActive])
+}
+
+// 2. ملف العميل (للشركات)
+model ClientProfile {
+  id            String    @id @default(cuid())
+  companyName   String
+  commercialReg String?   // السجل التجاري
+  taxNumber     String?   // الرقم الضريبي
+  address       String?
+  
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  shipments     Shipment[] // شحنات هذا العميل
+  quotes        Quote[]    // عروض أسعار هذا العميل
+}
+
+// 3. الشحنات
+model Shipment {
+  id            String    @id @default(cuid())
+  trackingNumber String   @unique // رقم التتبع (SAMA-XXXXXXXX)
+  type          String    // SEA, AIR, LAND
+  status        String    @default("PENDING") // PENDING, PROCESSING, IN_TRANSIT, CUSTOMS_CLEARANCE, DELIVERED, CANCELLED
+  
+  origin        String
+  destination   String
+  weight        Float?
+  pieces        Int?
+  description   String?
+  
+  departureDate DateTime?
+  arrivalDate   DateTime?
+  
+  // العلاقات
+  clientId      String
+  client        ClientProfile @relation(fields: [clientId], references: [id])
+  
+  managedById   String?
+  managedBy     User?         @relation("ManagedBy", fields: [managedById], references: [id])
+  
+  logs          AuditLog[]    // سجل حركات الشحنة
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([clientId])
+  @@index([createdAt])
+}
+
+// 4. عروض الأسعار
+model Quote {
+  id            String    @id @default(cuid())
+  status        String    @default("NEW") // NEW, REVIEWING, QUOTED, ACCEPTED, REJECTED
+  
+  details       String
+  origin        String
+  destination   String
+  
+  clientId      String
+  client        ClientProfile @relation(fields: [clientId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+}
+
+// 5. سجل التدقيق (للمساءلة والمتابعة)
+model AuditLog {
+  id            String    @id @default(cuid())
+  action        String    // مثال: "تحديث حالة الشحنة"
+  details       String?   // مثال: "تغيير من PENDING إلى IN_TRANSIT"
+  
+  userId        String    // من قام بالفعل
+  user          User      @relation(fields: [userId], references: [id])
+  
+  shipmentId    String?   // الشحنة المتأثرة (اختياري)
+  shipment      Shipment? @relation(fields: [shipmentId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+  @@index([shipmentId])
+  @@index([createdAt])
+}
+
+// 6. المدونة
+model BlogPost {
+  id          String   @id @default(cuid())
+  titleAr     String
+  titleEn     String
+  contentAr   String
+  contentEn   String
+  slug        String   @unique
+  image       String?  // صورة الغلاف
+  published   Boolean  @default(false)
+  
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  
+  gallery     BlogPostImage[] // معرض الصور الإضافية
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BlogPostImage {
+  id        String   @id @default(cuid())
+  url       String
+  caption   String?
+  
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
+
+// 7. رسائل التواصل / Contact Messages
+model ContactMessage {
+  id            String    @id @default(cuid())
+  type          String    // INQUIRY | QUOTE_REQUEST
+  name          String
+  email         String
+  phone         String
+  countryCode   String
+  
+  // للاستفسارات
+  message       String?
+  
+  // لطلبات عروض الأسعار
+  origin        String?
+  destination   String?
+  containerType String?
+  containerQty  Int?
+  
+  // الحالة والإدارة
+  status        String    @default("NEW") // NEW, READ, STARRED, ARCHIVED
+  isRead        Boolean   @default(false)
+  isStarred     Boolean   @default(false)
+  isArchived    Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// 8. التوظيف / Recruitment
+model JobListing {
+  id            String    @id @default(cuid())
+  titleAr       String
+  titleEn       String
+  descriptionAr String
+  descriptionEn String
+  requirementsAr String // Markdown or bullet points
+  requirementsEn String // Markdown or bullet points
+  location      String?   @default("Cairo, Egypt")
+  type          String    @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP
+  isActive      Boolean   @default(true)
+
+  applications  JobApplication[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
+model JobApplication {
+  id            String    @id @default(cuid())
+  fullName      String
+  email         String
+  phone         String
+  mobile        String?    // Optional secondary number as requested
+  coverLetter   String?
+  cvUrl         String     // Uploaded file path
+  status        String     @default("NEW") // NEW, REVIEWED, SHORTLISTED, REJECTED, HIRED
+  notes         String?    // Admin notes
+
+  jobId         String
+  job           JobListing @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([jobId])
+}
+
+// ========================================
+// 9. Website CMS - Dynamic Content Management
+// ========================================
+
+// Team Members (Leadership Team in Homepage)
+model TeamMember {
+  id        String   @id @default(cuid())
+  nameAr    String
+  nameEn    String
+  roleAr    String
+  roleEn    String
+  image     String   // Path to uploaded image
+  linkedin  String?
+  twitter   String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// Hero Slides (Homepage Banner Slideshow)
+model HeroSlide {
+  id            String   @id @default(cuid())
+  imageDesktopAr String?  @default("")  // Desktop image for Arabic (1920x1080 - 16:9)
+  imageDesktopEn String?  @default("")  // Desktop image for English (1920x1080 - 16:9)
+  imageMobile   String?  @default("")  // Mobile image (750x1334 - 9:16) - Universal
+  titleAr       String?  // Optional overlay title
+  titleEn       String?
+  subtitleAr    String?
+  subtitleEn    String?
+  descriptionAr String? // Long text description
+  descriptionEn String?
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive, order])
+}
+
+// Global Hero Section Configuration
+model HeroSettings {
+  id             String   @id @default("default")
+  blurAmount     Int      @default(0)          // Backdrop blur: 0-20px
+  overlayOpacity Int      @default(30)         // Overlay color opacity: 0-100%
+  overlayColor   String   @default("marine")   // Preset: 'marine', 'black', 'orange'
+  showGrid       Boolean  @default(true)       // Toggle grid pattern
+  
+  // Text Card Settings - DEPRECATED (Removed)
+  // Global Text Content
+  titleArLine1       String   @default("نوصل أعمالك")
+  titleArLine2       String   @default("إلى العالم")
+  titleEnLine1       String   @default("Connecting Your Business")
+  titleEnLine2       String   @default("To The World")
+  
+  // Typography Settings
+  titleFontSize      String   @default("text-6xl")
+  titleFontWeight    String   @default("font-extrabold")
+  titleColor         String   @default("#ffffff")
+  titleLine1Color    String   @default("#ffffff")
+  titleLine2Color    String   @default("#ffffff")
+  highlightColor     String   @default("#F97316") // Accent color
+  
+  titleFontFamilyAr  String   @default("font-cairo")
+  titleFontFamilyEn  String   @default("font-inter")
+  
+  // Highlight Keywords (Comma separated)
+  highlightWordsAr   String   @default("أعمالك, العالم")
+  highlightWordsEn   String   @default("Business, World")
+
+  subtitleAr     String   @default("شريكك اللوجستي الموثوق")
+  subtitleEn     String   @default("Your Trusted Logistics Partner")
+  
+  // About Section Images (Comma separated URLs)
+  aboutSectionImages String @default("https://images.unsplash.com/photo-1494412574643-35d324698420?auto=format&fit=crop&q=80&w=1200,https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=1200,https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&q=80&w=1200,https://images.unsplash.com/photo-1605745341112-85968b19335b?auto=format&fit=crop&q=80&w=1200")
+  descriptionAr  String   @default("حلول لوجستية متكاملة للشحن البحري والجوي والبري، مع خدمات التخليص الجمركي والتخزين لضمان وصول بضائعكم بأمان وسرعة.")
+  descriptionEn  String   @default("Integrated logistics solutions for sea, air, and land freight, with customs clearance and warehousing services to ensure your cargo arrives safely and quickly.")
+
+  updatedAt      DateTime @updatedAt
+}
+
+// Generic Site Settings (for stats, features, about content, etc.)
+model SiteSetting {
+  id        String   @id @default(cuid())
+  section   String   // 'stats', 'features', 'about', 'contact', etc.
+  key       String   // 'years_experience', 'global_coverage', etc.
+  valueAr   String
+  valueEn   String
+  extra     String?  // JSON for additional data (icon name, number value, image path)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([section, key])
+}
+
+// About Section Configuration
+model AboutSettings {
+  id             String   @id @default("default")
+  
+  // Section Header
+  badgeAr        String   @default("من نحن")
+  badgeEn        String   @default("About Us")
+  titleAr        String   @default("شريكك الاستراتيجي للحلول اللوجستية المتكاملة")
+  titleEn        String   @default("Your Strategic Partner for Integrated Logistics Solutions")
+  descriptionAr  String   @default("منذ عام 2000، نقدم خدمات لوجستية متميزة للسوق المصري والعربي. نفخر بخدمة أكثر من 1000 عميل في مختلف القطاعات، ونسعى دائماً لتقديم أفضل الحلول التي تلبي احتياجاتكم.")
+  descriptionEn  String   @default("Since 2000, we have been providing outstanding logistics services to the Egyptian and Arab markets. We are proud to serve over 1,000 clients across various sectors.")
+  
+  // CTA Button
+  ctaTextAr      String   @default("اعرف المزيد عنا")
+  ctaTextEn      String   @default("Learn More About Us")
+  ctaLink        String   @default("/profile")
+  
+  // Feature Items (4 items as JSON array)
+  featuresJson   String   @default("[{\"ar\":\"شحن بحري وجوي وبري\",\"en\":\"Sea, Air & Land Freight\"},{\"ar\":\"تخليص جمركي سريع\",\"en\":\"Fast Customs Clearance\"},{\"ar\":\"تخزين وتوزيع\",\"en\":\"Warehousing & Distribution\"},{\"ar\":\"تأمين شامل للبضائع\",\"en\":\"Comprehensive Cargo Insurance\"}]")
+  
+  // Floating Stats Card
+  statsValue     String   @default("25+")
+  statsLabelAr   String   @default("سنة من التميز")
+  statsLabelEn   String   @default("Years of Excellence")
+  
+  updatedAt      DateTime @updatedAt
+}
+
+// الخدمات اللوجستية
+model Service {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  iconName      String   @default("Ship")
+  titleAr       String
+  titleEn       String
+  shortDescAr   String
+  shortDescEn   String
+  descriptionAr String   @default("")
+  descriptionEn String   @default("")
+  featuresJson  String   @default("[]")
+  image         String?  // Desktop image (default)
+  imageMobile   String?  // Mobile-specific image (optional - falls back to image)
+  color         String   @default("#0369a1")
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  images        ServiceImage[]  // صور الخدمة
+}
+
+// صور الخدمات - صور متعددة لكل خدمة
+// الأبعاد الموصى بها: 800 × 600 بكسل (نسبة 4:3) - الحد الأقصى: 2MB
+model ServiceImage {
+  id        String   @id @default(cuid())
+  url       String   // مسار الصورة
+  caption   String?  // تعليق اختياري (عربي)
+  captionEn String?  // تعليق اختياري (إنجليزي)
+  order     Int      @default(0)
+  
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// مراحل النجاح / Company Milestones (Journey Timeline)
+model Milestone {
+  id            String   @id @default(cuid())
+  year          String   // السنة مثل "2000", "2024"
+  titleAr       String   // العنوان بالعربي
+  titleEn       String   // العنوان بالإنجليزي
+  descriptionAr String   // الوصف بالعربي
+  descriptionEn String   // الوصف بالإنجليزي
+  image         String?  // صورة المرحلة (اختياري)
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// Future Pulse Card Settings (Timeline Ending Card)
+model FuturePulseSettings {
+  id             String   @id @default("default")
+  badgeAr        String   @default("المستقبل")
+  badgeEn        String   @default("The Future")
+  titleAr        String   @default("طموحنا مستمر..")
+  titleEn        String   @default("Our Ambition Continues..")
+  descriptionAr  String   @default("نحو مستقبل لوجستي متكامل")
+  descriptionEn  String   @default("Towards an Integrated Logistics Future")
+  image          String?
+  updatedAt      DateTime @updatedAt
+}
+
+// إحصائيات الهيرو (Hero Stats)
+model HeroStat {
+  id        String   @id @default(cuid())
+  value     String   // القيمة مثل "25+", "50+", "10K+"
+  labelAr   String   // التسمية بالعربي
+  labelEn   String   // التسمية بالإنجليزي
+  icon      String   @default("Clock") // اسم الأيقونة من lucide-react
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// ========================================
+// Services Page Hero Section
+// ========================================
+
+// Services Hero Slides (Background images for services page)
+model ServicesHeroSlide {
+  id            String   @id @default(cuid())
+  imageDesktopAr String?  @default("")  // Desktop image for Arabic (1920x1080 - 16:9)
+  imageDesktopEn String?  @default("")  // Desktop image for English (1920x1080 - 16:9)
+  imageMobile   String?  @default("")  // Mobile image - Universal
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Services Hero Settings (Configuration)
+model ServicesHeroSettings {
+  id             String   @id @default("default")
+  
+  // Visual Settings
+  blurAmount     Int      @default(0)          // Backdrop blur: 0-20px
+  overlayOpacity Int      @default(85)         // Overlay color opacity: 0-100%
+  overlayColor   String   @default("#1e3a5f")  // HEX color
+  showGrid       Boolean  @default(true)       // Toggle grid pattern
+  showParticles  Boolean  @default(true)       // Toggle floating particles
+  
+  // Typography Settings
+  titleFontSize      String   @default("text-5xl")
+  titleFontWeight    String   @default("font-extrabold")
+  titleColor         String   @default("#ffffff")
+  titleLine1Color    String   @default("#ffffff")
+  titleLine2Color    String   @default("#ffffff")
+  highlightColor     String   @default("#F97316")
+  titleFontFamilyAr  String   @default("font-cairo")
+  titleFontFamilyEn  String   @default("font-inter")
+  
+  // Content - Arabic
+  badgeAr        String   @default("حلول لوجستية متكاملة")
+  titleAr        String   @default("خدماتنا اللوجستية")
+  descriptionAr  String   @default("نقدم مجموعة متكاملة من الخدمات اللوجستية لتلبية جميع احتياجات شحنك وتخزينك")
+  highlightWordsAr String  @default("")  // Comma-separated words to highlight (Arabic)
+  
+  // Content - English
+  badgeEn        String   @default("Integrated Logistics Solutions")
+  titleEn        String   @default("Our Logistics Services")
+  descriptionEn  String   @default("We offer a comprehensive range of logistics services to meet all your shipping and storage needs")
+  highlightWordsEn String  @default("")  // Comma-separated words to highlight (English)
+  
+  updatedAt      DateTime @updatedAt
+}
+
+// ========================================
+// Careers Page Hero Section
+// ========================================
+
+// Careers Hero Slides (Background images for careers page)
+model CareersHeroSlide {
+  id            String   @id @default(cuid())
+  imageDesktopAr String?  @default("")  // Desktop image for Arabic (1920x1080 - 16:9)
+  imageDesktopEn String?  @default("")  // Desktop image for English (1920x1080 - 16:9)
+  imageMobile   String?  @default("")  // Mobile image - Universal
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Careers Hero Settings (Configuration)
+model CareersHeroSettings {
+  id             String   @id @default("default")
+  
+  // Visual Settings
+  blurAmount     Int      @default(0)          // Backdrop blur: 0-20px
+  overlayOpacity Int      @default(80)         // Overlay color opacity: 0-100%
+  overlayColor   String   @default("#1e3a5f")  // HEX color
+  showGrid       Boolean  @default(true)       // Toggle grid pattern
+  showParticles  Boolean  @default(true)       // Toggle floating particles
+  
+  // Typography Settings
+  titleFontSize      String   @default("text-5xl")
+  titleFontWeight    String   @default("font-extrabold")
+  titleColor         String   @default("#ffffff")
+  titleLine1Color    String   @default("#ffffff")
+  titleLine2Color    String   @default("#ffffff")
+  highlightColor     String   @default("#F97316")
+  titleFontFamilyAr  String   @default("font-cairo")
+  titleFontFamilyEn  String   @default("font-inter")
+  
+  // Content - Arabic
+  badgeAr        String   @default("نحن نوظف!")
+  titleAr        String   @default("انضم إلى فريق سما")
+  descriptionAr  String   @default("ابدأ رحلة مهنية استثنائية مع فريق من المبتكرين والمحترفين في عالم اللوجستيات")
+  highlightWordsAr String  @default("")  // Comma-separated words to highlight (Arabic)
+  
+  // Content - English
+  badgeEn        String   @default("We're Hiring!")
+  titleEn        String   @default("Join the Sama Team")
+  descriptionEn  String   @default("Start an exceptional career journey with a team of innovators and professionals in the logistics world")
+  highlightWordsEn String  @default("")  // Comma-separated words to highlight (English)
+  
+  // Hero Stats (JSON array)
+  statsJson      String   @default("[{\"value\":\"100+\",\"labelAr\":\"موظف\",\"labelEn\":\"Employees\"},{\"value\":\"25+\",\"labelAr\":\"سنة خبرة\",\"labelEn\":\"Years\"},{\"value\":\"50+\",\"labelAr\":\"دولة\",\"labelEn\":\"Countries\"}]")
+  
+  updatedAt      DateTime @updatedAt
+}
+
+// ========================================
+// About Page Hero Section
+// ========================================
+
+// About Hero Slides (Background images for about page)
+model AboutHeroSlide {
+  id            String   @id @default(cuid())
+  imageDesktopAr String?  @default("")  // Desktop image for Arabic (1920x1080 - 16:9)
+  imageDesktopEn String?  @default("")  // Desktop image for English (1920x1080 - 16:9)
+  imageMobile   String?  @default("")  // Mobile image - Universal
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// About Hero Settings (Configuration)
+model AboutHeroSettings {
+  id             String   @id @default("default")
+  
+  // Visual Settings
+  blurAmount     Int      @default(0)          // Backdrop blur: 0-20px
+  overlayOpacity Int      @default(85)         // Overlay color opacity: 0-100%
+  overlayColor   String   @default("#1e3a5f")  // HEX color
+  showGrid       Boolean  @default(true)       // Toggle grid pattern
+  showParticles  Boolean  @default(true)       // Toggle floating particles/orbs
+  
+  // Typography Settings
+  titleFontSize      String   @default("text-5xl")
+  titleFontWeight    String   @default("font-extrabold")
+  titleColor         String   @default("#ffffff")
+  titleLine1Color    String   @default("#ffffff")
+  titleLine2Color    String   @default("#F97316")  // SAMA highlighted
+  titleLine3Color    String   @default("#ffffff")
+  highlightColor     String   @default("#F97316")
+  titleFontFamilyAr  String   @default("font-cairo")
+  titleFontFamilyEn  String   @default("font-inter")
+  
+  // Content - Arabic
+  badgeAr        String   @default("شريكك اللوجستي الموثوق منذ 2000")
+  titleLine1Ar   String   @default("نحن")
+  titleLine2Ar   String   @default("سما")
+  titleLine3Ar   String   @default("للخدمات اللوجستية")
+  descriptionAr  String   @default("نحن أكثر من مجرد شركة شحن.. نحن شريكك الاستراتيجي في النجاح، نربط أعمالك بالعالم عبر حلول لوجستية ذكية ومتكاملة تضمن وصول بضائعك بأمان وفي الوقت المحدد.")
+  highlightWordsAr String  @default("")  // Comma-separated words to highlight (Arabic)
+  
+  // Content - English
+  badgeEn        String   @default("Your Trusted Logistics Partner Since 2000")
+  titleLine1En   String   @default("We Are")
+  titleLine2En   String   @default("SAMA")
+  titleLine3En   String   @default("Logistics")
+  descriptionEn  String   @default("We are more than just a shipping company. We are your strategic partner in success, connecting your business to the world through smart and integrated logistics solutions.")
+  highlightWordsEn String  @default("")  // Comma-separated words to highlight (English)
+  
+  // CTA Buttons
+  ctaPrimaryTextAr  String   @default("تواصل معنا")
+  ctaPrimaryTextEn  String   @default("Contact Us")
+  ctaPrimaryLink    String   @default("/contact")
+  ctaSecondaryTextAr String  @default("استكشف خدماتنا")
+  ctaSecondaryTextEn String  @default("Explore Services")
+  ctaSecondaryLink   String  @default("/services")
+  
+  updatedAt      DateTime @updatedAt
+}
+
+// ========================================
+// About Page - "Why Choose Us" Section
+// ========================================
+
+model AboutWhySection {
+  id             String   @id @default("default")
+  
+  // Badge Text
+  badgeAr        String   @default("لماذا نحن؟")
+  badgeEn        String   @default("Why Us?")
+  
+  // Main Title
+  titleAr        String   @default("لماذا تختار سما للخدمات اللوجستية؟")
+  titleEn        String   @default("Why Choose SAMA Logistics?")
+  
+  // Description
+  descriptionAr  String   @default("نحن لسنا مجرد شركة شحن، بل شريكك الاستراتيجي الذي يفهم احتياجات عملك ويعمل على تلبيتها بأعلى معايير الجودة والكفاءة.")
+  descriptionEn  String   @default("We are not just a shipping company, but your strategic partner who understands your business needs and works to meet them with the highest standards of quality and efficiency.")
+  
+  // Reasons/Features (JSON Array)
+  // Format: [{"ar": "خبرة تمتد لأكثر من 25 عاماً", "en": "Over 25 years of experience"}, ...]
+  reasonsJson    String   @default("[{\"ar\":\"خبرة تمتد لأكثر من 25 عاماً\",\"en\":\"Over 25 years of experience\"},{\"ar\":\"شبكة شركاء عالمية موثوقة\",\"en\":\"Trusted global partner network\"},{\"ar\":\"أسعار تنافسية وشفافة\",\"en\":\"Competitive and transparent pricing\"},{\"ar\":\"دعم فني على مدار الساعة\",\"en\":\"24/7 technical support\"},{\"ar\":\"حلول مخصصة لكل عميل\",\"en\":\"Customized solutions for every client\"},{\"ar\":\"تتبع الشحنات في الوقت الفعلي\",\"en\":\"Real-time shipment tracking\"}]")
+  
+  // Images Gallery (Relation)
+  images         AboutWhyImage[]
+  
+  // Floating Stats Card
+  statsValue     String   @default("25+")
+  statsLabelAr   String   @default("سنة من التميز")
+  statsLabelEn   String   @default("Years of Excellence")
+  
+  updatedAt      DateTime @updatedAt
+}
+
+// About Why Section Images
+// Recommended dimensions: 800×600 pixels (4:3) - Max: 2MB
+model AboutWhyImage {
+  id        String   @id @default(cuid())
+  url       String   // Image path
+  order     Int      @default(0)
+  
+  sectionId String   @default("default")
+  section   AboutWhySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ========================================
+// Services Page — Dynamic Sections
+// ========================================
+
+// Capability Stats Bar (e.g. "15+ Trucks", "3 Ports", "60 Tons")
+model ServicesPageStat {
+  id        String   @id @default(cuid())
+  icon      String   @default("Truck")       // lucide-react icon name
+  valueAr   String                            // "15+"
+  valueEn   String
+  labelAr   String                            // "شاحنة ثقيلة"
+  labelEn   String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// Fleet Showcase (Mercedes Actros, Volvo FH500, etc.)
+model FleetTruck {
+  id        String   @id @default(cuid())
+  nameAr    String
+  nameEn    String
+  image     String?                           // Uploaded via dashboard
+  descAr    String   @default("")
+  descEn    String   @default("")
+  specsJson String   @default("[]")           // JSON: [{labelAr, labelEn, valueAr, valueEn}]
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// Port Operations (Port Said, East Port Said, Damietta)
+model PortOperation {
+  id        String   @id @default(cuid())
+  nameAr    String
+  nameEn    String
+  image     String?
+  descAr    String   @default("")
+  descEn    String   @default("")
+  factsJson String   @default("[]")           // JSON: [{ar, en}]
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// Specialized Cargo Types (Marble, Container, Heavy Cargo)
+model SpecializedCargo {
+  id        String   @id @default(cuid())
+  icon      String   @default("Package")      // lucide-react icon name
+  titleAr   String
+  titleEn   String
+  badgeAr   String   @default("")
+  badgeEn   String   @default("")
+  descAr    String   @default("")
+  descEn    String   @default("")
+  gradient  String   @default("from-sky-500 to-blue-600")
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// ========================================
+// Blog Page Hero Section
+// ========================================
+
+model BlogHeroSettings {
+  id            String   @id @default("default")
+
+  // Visual Effects
+  blurAmount    Int      @default(0)          // Backdrop blur: 0-20px
+  overlayOpacity Int     @default(75)         // Overlay color opacity: 0-100%
+  overlayColor  String   @default("marine")   // Preset: 'marine', 'black', 'orange'
+  showGrid      Boolean  @default(true)       // Toggle grid pattern
+
+  // Typography Settings
+  titleFontSize      String   @default("text-5xl")
+  titleFontWeight    String   @default("font-bold")
+  titleColor         String   @default("#ffffff")
+  subtitleColor      String   @default("#ffffffcc")  // white/80
+  badgeColor         String   @default("#F97316")
+  highlightColor     String   @default("#F97316")
+  titleFontFamilyAr  String   @default("font-cairo")
+  titleFontFamilyEn  String   @default("font-inter")
+
+  // Highlight Words
+  highlightWordsAr  String   @default("")  // Comma-separated words to highlight (Arabic)
+  highlightWordsEn  String   @default("")  // Comma-separated words to highlight (English)
+
+  // Content - Arabic
+  titleAr       String   @default("آخر الأخبار والمقالات")
+  subtitleAr    String   @default("تابع أحدث أخبار الشحن، اتجاهات السوق، ونصائح الخبراء لتعزيز سلسلة الإمداد الخاصة بك.")
+  badgeAr       String   @default("المدونة والأخبار")
+
+  // Content - English
+  titleEn       String   @default("Latest News & Articles")
+  subtitleEn    String   @default("Stay updated with the latest shipping news, market trends, and expert tips to optimize your supply chain.")
+  badgeEn       String   @default("Blog & News")
+
+  // Background Image (optional, fallback if no slides)
+  image         String?
+
+  // Layout Controls
+  articleLayout String   @default("grid")    // "grid" or "list"
+  cardSize      String   @default("medium")  // "small", "medium", "large"
+
+  updatedAt     DateTime @updatedAt
+}
+
+model BlogHeroSlide {
+  id             String   @id @default(cuid())
+  imageDesktopAr String?  @default("")  // Desktop image for Arabic (1920x1080)
+  imageDesktopEn String?  @default("")  // Desktop image for English (1920x1080)
+  imageMobile    String?  @default("")  // Mobile image (750x1334) - Universal
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isActive, order])
+}
+
+// ========================================
+// Enterprise Media Library (Unlink Architecture)
+// ========================================
+
+model Media {
+  id        String       @id @default(cuid())
+  url       String
+  fileName  String?
+  mimeType  String?
+  size      Int?
+  width     Int?
+  height    Int?
+  createdAt DateTime     @default(now())
+  usages    MediaUsage[]
+
+  @@index([url])
+}
+
+model MediaUsage {
+  id       String  @id @default(cuid())
+  mediaId  String
+  entity   String  // hero, blog, milestone, service, team, career
+  entityId String
+  media    Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, entity, entityId])
+  @@index([entityId])
+}

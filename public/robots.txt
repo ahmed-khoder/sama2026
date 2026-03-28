@@ -1,0 +1,43 @@
+# Sama Logistics - robots.txt
+# https://samalogistics.com
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin/dashboard areas
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /private/
+
+# Crawl delay for polite crawling
+Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://samalogistics.com/sitemap.xml
+Sitemap: https://samalogistics.com/sitemap-ar.xml
+Sitemap: https://samalogistics.com/sitemap-en.xml
+
+# Special rules for Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Special rules for Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
