@@ -3,11 +3,11 @@
 # Multi-stage build for minimal image size
 # ═══════════════════════════════════════════
 
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # ── Stage 1: Install dependencies ──
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json ./
