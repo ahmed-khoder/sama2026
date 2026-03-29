@@ -502,6 +502,24 @@
   animation: marquee-right linear infinite;
 }
 
+/* Accreditations Ribbon — Smooth Infinite Scroll */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-marquee-scroll {
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.animate-marquee-scroll:hover {
+  animation-play-state: paused;
+}
+
 /* ============================================
    Smooth Scrolling & Scrollbar
    ============================================ */

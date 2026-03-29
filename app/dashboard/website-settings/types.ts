@@ -302,6 +302,14 @@ export interface AboutHeroSlide {
     order: number;
 }
 
+export interface OdooSettings {
+    url: string;
+    database: string;
+    username: string;
+    password?: string;
+    isActive: boolean;
+}
+
 export const defaultAboutHeroSettings: AboutHeroSettings = {
     blurAmount: 0,
     overlayOpacity: 85,
@@ -337,6 +345,14 @@ export const defaultAboutHeroSettings: AboutHeroSettings = {
     ctaSecondaryTextAr: 'استكشف خدماتنا',
     ctaSecondaryTextEn: 'Explore Services',
     ctaSecondaryLink: '/services',
+};
+
+export const defaultOdooSettings: OdooSettings = {
+    url: '',
+    database: '',
+    username: '',
+    password: '',
+    isActive: true,
 };
 
 // ==================== CONSTANTS ====================
@@ -461,6 +477,7 @@ export const getTabCategories = (isRTL: boolean) => [
             { id: 'about', labelAr: 'قسم من نحن', labelEn: 'About Section' },
             { id: 'team', labelAr: 'فريق العمل', labelEn: 'Team' },
             { id: 'branding', labelAr: '🎨 الشعارات', labelEn: '🎨 Branding' },
+            { id: 'accreditations', labelAr: '🏛️ الاعتمادات', labelEn: '🏛️ Accreditations' },
         ]
     },
     {

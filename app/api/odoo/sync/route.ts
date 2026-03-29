@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { connectToOdoo } from '@/lib/odooClient';
+import { connectToOdoo, bumpOdooDataCacheVersion } from '@/lib/odooClient';
 
 /**
  * POST /api/odoo/sync
@@ -17,6 +17,7 @@ export async function POST() {
         const uid = await connectToOdoo();
 
         // 2. Purge ALL cached Odoo data in one shot
+        bumpOdooDataCacheVersion();
         revalidateTag('odoo-data');
 
         return NextResponse.json({

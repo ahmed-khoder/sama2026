@@ -11,7 +11,7 @@
 import { prisma } from '@/lib/db';
 import { deletePhysicalFile } from '@/lib/delete-file';
 
-type MediaEntity = 'hero' | 'about' | 'blog' | 'milestone' | 'service' | 'team' | 'career';
+type MediaEntity = 'hero' | 'about' | 'blog' | 'milestone' | 'service' | 'team' | 'career' | 'accreditation';
 
 // ─── Register / Upsert ──────────────────────────────────────────────
 
@@ -367,6 +367,16 @@ export async function cleanupEntityReferences(
         }
 
         default:
+          // ── ACCREDITATION ─────────────────────────────────────────
+          if (usage.entity === 'accreditation') {
+            const accred = await prisma.accreditation.findUnique({ where: { id: usage.entityId } });
+            if (accred && accred.logo === mediaUrl) {
+              await prisma.accreditation.delete({ where: { id: usage.entityId } });
+              cleaned++;
+              details.push(`Accreditation ${usage.entityId} (deleted)`);
+              break;
+            }
+          }
           console.warn(`⚠️ Unknown entity type: ${usage.entity}`);
       }
     } catch (err) {

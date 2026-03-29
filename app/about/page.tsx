@@ -12,6 +12,7 @@ import JourneyTimeline, { FuturePulseData } from '@/components/JourneyTimeline';
 import Link from 'next/link';
 import { HeroSlideshow } from '@/components/HeroSlideshow';
 import { getLanguageAwareImage } from '@/lib/imageUtils';
+import AccreditationsManager from '@/components/AccreditationsManager';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 import { highlightText, getOverlayColor } from '@/lib/hero-utils';
@@ -602,6 +603,9 @@ export default function AboutPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ===== ACCREDITATIONS ===== */}
+            <AccreditationsManager type="about" />
 
             {/* Why Choose Us */}
             <section className="py-16 md:py-20 bg-slate-50 dark:bg-marine-900 relative overflow-hidden">

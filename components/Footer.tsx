@@ -74,6 +74,7 @@ function SocialIconHL({ icon, href, label }: { icon: React.ReactNode; href: stri
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import DynamicLogo from './DynamicLogo';
+import AccreditationsManager from './AccreditationsManager';
 import MobileFooter from './MobileFooter';
 
 export default function Footer() {
@@ -101,19 +102,32 @@ export default function Footer() {
         {/* Main Content */}
         <div className="relative border-t border-gray-100 dark:border-slate-800">
           <div className="container mx-auto px-4 py-16">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-y-0 lg:gap-x-12 mb-4">
 
               {/* Company Info */}
-              <CompanyColumn isRTL={isRTL} language={language} />
+              <div className="mb-12 lg:mb-0">
+                <CompanyColumn isRTL={isRTL} language={language} />
+              </div>
 
               {/* Quick Links */}
-              <QuickLinksColumn isRTL={isRTL} language={language} t={t} />
+              <div className="mb-12 lg:mb-0">
+                <QuickLinksColumn isRTL={isRTL} language={language} t={t} />
+              </div>
 
               {/* Services */}
-              <ServicesColumn isRTL={isRTL} language={language} t={t} />
+              <div className="mb-12 lg:mb-0">
+                <ServicesColumn isRTL={isRTL} language={language} t={t} />
+              </div>
 
-              {/* Contact */}
-              <ContactColumn isRTL={isRTL} language={language} />
+              {/* Contact (Tall Column) */}
+              <div className="lg:row-span-2 mb-12 lg:mb-0">
+                <ContactColumn isRTL={isRTL} language={language} />
+              </div>
+
+              {/* ═══ Trust Bar — Elevated into empty space ═══ */}
+              <div className="md:col-span-2 lg:col-span-3 lg:col-start-1 lg:self-end pt-4 lg:pt-8">
+                <AccreditationsManager type="footer" />
+              </div>
 
             </div>
 

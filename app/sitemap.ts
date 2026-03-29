@@ -93,6 +93,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching job listings for sitemap:', error);
   }
 
+  // Dynamic services mapping
+  let servicePages: MetadataRoute.Sitemap = [];
+  try {
+    const services = await prisma.service.findMany({
+      where: { isActive: true },
+      select: {
+        slug: true,
+        updatedAt: true,
+      },
+      orderBy: { order: 'asc' },
+    });
+
+    servicePages = services.map((service) => ({
+      url: `${baseUrl}/services/${service.slug}`,
+      lastModified: service.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+  } catch (error) {
+    console.error('Error fetching services for sitemap:', error);
+  }
+
   // Combine all pages
-  return [...staticPages, ...blogPosts, ...jobListings];
+  return [...staticPages, ...servicePages, ...blogPosts, ...jobListings];
 }

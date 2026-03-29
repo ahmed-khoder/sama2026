@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, User, Shield, Settings, Save, RefreshCw, Plus, Edit2, Trash2,
     ToggleLeft, ToggleRight, Mail, Phone, Camera, Eye, EyeOff, Check, X,
-    Globe, Moon, Sun, Monitor, Upload, Key
+    Globe, Moon, Sun, Monitor, Upload, Key, Server, Database, Zap, CheckCircle2, XCircle, AlertTriangle
 } from 'lucide-react';
+import { authFetch } from '@/lib/auth-fetch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +49,13 @@ export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+    // Odoo Settings State
+    const [odooSettings, setOdooSettings] = useState({ url: '', database: '', username: '', password: '' });
+    const [odooTesting, setOdooTesting] = useState(false);
+    const [odooConnectionStatus, setOdooConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [showOdooPassword, setShowOdooPassword] = useState(false);
+    const [odooHasChanges, setOdooHasChanges] = useState(false);
 
     // User form state
     const [showAddModal, setShowAddModal] = useState(false);
@@ -104,8 +112,67 @@ export default function SettingsPage() {
         }
     }, []);
 
+    // Fetch Odoo settings from DB
+    const fetchOdooSettings = useCallback(async () => {
+        try {
+            const res = await authFetch('/api/cms/odoo-settings');
+            if (res.ok) {
+                const data = await res.json();
+                setOdooSettings({ url: data.url || '', database: data.database || '', username: data.username || '', password: data.password || '' });
+            }
+        } catch (err) {
+            console.error('Failed to fetch Odoo settings:', err);
+        }
+    }, []);
+
+    // Save Odoo settings to DB
+    const handleSaveOdoo = async () => {
+        setSaving(true);
+        try {
+            const res = await authFetch('/api/cms/odoo-settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(odooSettings),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setOdooSettings(prev => ({ ...prev, password: data.password }));
+                setOdooHasChanges(false);
+                success(isRTL ? 'تم حفظ إعدادات أودو بنجاح' : 'Odoo settings saved successfully');
+            } else {
+                throw new Error('Save failed');
+            }
+        } catch (err) {
+            error(isRTL ? 'فشل حفظ إعدادات أودو' : 'Failed to save Odoo settings');
+        } finally { setSaving(false); }
+    };
+
+    // Test Odoo connection
+    const handleTestOdoo = async () => {
+        setOdooTesting(true);
+        setOdooConnectionStatus('idle');
+        try {
+            const res = await authFetch('/api/cms/odoo-settings/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(odooSettings),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setOdooConnectionStatus('success');
+                success(isRTL ? 'تم الاتصال بنجاح بخادم أودو! ✓' : 'Successfully connected to Odoo! ✓');
+            } else {
+                throw new Error(data.error || 'Connection failed');
+            }
+        } catch (err: any) {
+            setOdooConnectionStatus('error');
+            error(err.message || (isRTL ? 'فشل الاتصال بالخادم' : 'Failed to connect'));
+        } finally { setOdooTesting(false); }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchOdooSettings();
         // Initialize profile with current user data from database
         if (currentUser) {
             setProfileData({
@@ -117,7 +184,7 @@ export default function SettingsPage() {
                 theme: (currentUser as any).theme || currentTheme,
             });
         }
-    }, [fetchUsers, currentUser, language, currentTheme]);
+    }, [fetchUsers, fetchOdooSettings, currentUser, language, currentTheme]);
 
     // Upload avatar
     const handleAvatarUpload = async (file: File) => {
@@ -401,6 +468,7 @@ export default function SettingsPage() {
         { id: 'users', icon: Users, labelAr: 'المستخدمين', labelEn: 'Users' },
         { id: 'profile', icon: User, labelAr: 'البروفايل', labelEn: 'Profile' },
         { id: 'security', icon: Shield, labelAr: 'الأمان', labelEn: 'Security' },
+        { id: 'odoo', icon: Server, labelAr: 'ربط أودو', labelEn: 'Odoo ERP' },
     ];
 
     if (loading) {
@@ -809,6 +877,146 @@ export default function SettingsPage() {
                                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
                                 {isRTL ? 'تغيير كلمة المرور' : 'Change Password'}
                             </button>
+                        </div>
+                    )}
+
+                    {/* Odoo ERP Tab */}
+                    {activeTab === 'odoo' && (
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                            <div className="p-6 space-y-6">
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                                        {isRTL ? 'إعدادات الاتصال بأودو' : 'Odoo Connection Settings'}
+                                    </h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        {isRTL ? 'أدخل بيانات خادم أودو لربط النظام. اضغط "اختبار" للتأكد ثم "حفظ".' : 'Enter your Odoo server credentials. Click "Test" to verify, then "Save".'}
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                    {/* Server URL */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            <Server className="w-4 h-4 text-brand-orange" />
+                                            {isRTL ? 'رابط الخادم' : 'Server URL'}
+                                            <span className="text-red-400">*</span>
+                                        </label>
+                                        <input
+                                            type="url"
+                                            value={odooSettings.url}
+                                            onChange={(e) => { setOdooSettings(s => ({ ...s, url: e.target.value })); setOdooHasChanges(true); setOdooConnectionStatus('idle'); }}
+                                            placeholder="https://samalogs.co/"
+                                            className="w-full p-3 rounded-xl bg-gray-50 dark:bg-slate-900 border-none ring-1 ring-gray-200 dark:ring-slate-600 focus:ring-2 focus:ring-brand-orange text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                            dir="ltr"
+                                        />
+                                    </div>
+
+                                    {/* Database */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            <Database className="w-4 h-4 text-brand-orange" />
+                                            {isRTL ? 'اسم قاعدة البيانات' : 'Database Name'}
+                                            <span className="text-red-400">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={odooSettings.database}
+                                            onChange={(e) => { setOdooSettings(s => ({ ...s, database: e.target.value })); setOdooHasChanges(true); setOdooConnectionStatus('idle'); }}
+                                            placeholder="sama"
+                                            className="w-full p-3 rounded-xl bg-gray-50 dark:bg-slate-900 border-none ring-1 ring-gray-200 dark:ring-slate-600 focus:ring-2 focus:ring-brand-orange text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                            dir="ltr"
+                                        />
+                                    </div>
+
+                                    {/* Username */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            <User className="w-4 h-4 text-brand-orange" />
+                                            {isRTL ? 'اسم المستخدم / البريد' : 'Username / Email'}
+                                            <span className="text-red-400">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={odooSettings.username}
+                                            onChange={(e) => { setOdooSettings(s => ({ ...s, username: e.target.value })); setOdooHasChanges(true); setOdooConnectionStatus('idle'); }}
+                                            placeholder="admin@samalogs.com"
+                                            className="w-full p-3 rounded-xl bg-gray-50 dark:bg-slate-900 border-none ring-1 ring-gray-200 dark:ring-slate-600 focus:ring-2 focus:ring-brand-orange text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                            dir="ltr"
+                                        />
+                                    </div>
+
+                                    {/* Password */}
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            <Key className="w-4 h-4 text-brand-orange" />
+                                            {isRTL ? 'كلمة المرور / مفتاح API' : 'Password / API Key'}
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showOdooPassword ? 'text' : 'password'}
+                                                value={odooSettings.password}
+                                                onChange={(e) => { setOdooSettings(s => ({ ...s, password: e.target.value })); setOdooHasChanges(true); setOdooConnectionStatus('idle'); }}
+                                                placeholder="••••••••"
+                                                className="w-full p-3 pe-12 rounded-xl bg-gray-50 dark:bg-slate-900 border-none ring-1 ring-gray-200 dark:ring-slate-600 focus:ring-2 focus:ring-brand-orange text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                                                dir="ltr"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowOdooPassword(!showOdooPassword)}
+                                                className="absolute top-1/2 end-3 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                            >
+                                                {showOdooPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                            {isRTL ? 'اتركها فارغة للاحتفاظ بالقيمة المحفوظة.' : 'Leave blank to keep the stored value.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Bar */}
+                            <div className="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    {odooConnectionStatus === 'success' && (
+                                        <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                                            <CheckCircle2 className="w-3.5 h-3.5" /> {isRTL ? 'الاتصال ناجح ✓' : 'Connected ✓'}
+                                        </div>
+                                    )}
+                                    {odooConnectionStatus === 'error' && (
+                                        <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                                            <XCircle className="w-3.5 h-3.5" /> {isRTL ? 'فشل الاتصال ✗' : 'Failed ✗'}
+                                        </div>
+                                    )}
+                                    {odooHasChanges && (
+                                        <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                                            <AlertTriangle className="w-3 h-3" /> {isRTL ? 'تغييرات غير محفوظة' : 'Unsaved changes'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={handleTestOdoo}
+                                        disabled={odooTesting || !odooSettings.url || !odooSettings.database || !odooSettings.username}
+                                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                                            odooConnectionStatus === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 ring-1 ring-green-200 dark:ring-green-800'
+                                            : odooConnectionStatus === 'error' ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 ring-1 ring-red-200 dark:ring-red-800'
+                                            : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600'
+                                        }`}
+                                    >
+                                        {odooTesting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                                        {odooTesting ? (isRTL ? 'جارٍ الفحص...' : 'Testing...') : (isRTL ? 'اختبار الاتصال' : 'Test Connection')}
+                                    </button>
+                                    <button
+                                        onClick={handleSaveOdoo}
+                                        disabled={saving || odooTesting}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-brand-orange to-brand-gold text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                        {isRTL ? 'حفظ الإعدادات' : 'Save Settings'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </motion.div>

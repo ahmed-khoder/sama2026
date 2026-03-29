@@ -26,6 +26,7 @@ import {
     TeamTab,
 } from './components/tabs/home';
 import BrandingTab from './components/tabs/home/BrandingTab';
+import AccreditationsTab from './components/tabs/home/AccreditationsTab';
 import {
     ServicesHeroTab,
     ServicesManagementTab,
@@ -250,6 +251,8 @@ export default function WebsiteSettingsPage() {
                         uploadImage={uploadImage}
                     />
                 );
+            case 'accreditations':
+                return <AccreditationsTab />;
 
             // Services tabs
             case 'services-hero':
@@ -558,6 +561,7 @@ export default function WebsiteSettingsPage() {
                 return (
                     <BlogHeroSettingsTab isRTL={isRTL} uploadImage={uploadImage} />
                 );
+
 
             default:
                 return null;

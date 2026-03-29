@@ -15,6 +15,7 @@ import AboutPreviewSection from '@/components/home/AboutPreviewSection';
 import TeamSection from '@/components/home/TeamSection';
 import CTASection from '@/components/home/CTASection';
 
+
 // Lazy load heavy components
 const WorldMapVisualization = dynamic(
     () => import('@/components/WorldMapVisualization'),

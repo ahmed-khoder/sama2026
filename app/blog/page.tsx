@@ -199,7 +199,6 @@ export default function BlogPage() {
                 transition={{ delay: 0.2 }}
                 className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
               >
-                <BookOpen className="w-4 h-4" style={{ color: heroSettings.badgeColor || '#F97316' }} />
                 <span className="text-sm font-semibold tracking-wide" style={{ color: heroSettings.badgeColor || '#F97316' }}>{isRTL ? heroSettings.badgeAr : heroSettings.badgeEn}</span>
               </motion.div>
 
@@ -292,9 +291,9 @@ export default function BlogPage() {
                 >
                   <Link href={`/blog/${post.slug}`} className="group h-full block">
                     <article className="h-full bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 border border-gray-100 dark:border-slate-800 hover:border-brand-orange/40 flex flex-col">
-                      {/* Image */}
-                      <div className={`relative ${imageClasses} overflow-hidden bg-gray-100 dark:bg-slate-800`}>
-                        {post.image ? (
+                      {/* Image - Only render if available */}
+                      {post.image && (
+                        <div className={`relative ${imageClasses} overflow-hidden bg-gray-100 dark:bg-slate-800 shrink-0`}>
                           <Image
                             src={post.image}
                             alt={isRTL ? post.titleAr : post.titleEn}
@@ -302,27 +301,21 @@ export default function BlogPage() {
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
-                            <Newspaper className="w-14 h-14" />
-                          </div>
-                        )}
-                        {/* Hover Gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        {/* Shine */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                      </div>
+                          {/* Hover Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          {/* Shine */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                        </div>
+                      )}
 
                       {/* Content */}
                       <div className="p-6 flex-1 flex flex-col">
                         {/* Meta Row */}
                         <div className="flex items-center gap-3 mb-4">
                           <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-brand-orange/15 to-brand-gold/15 text-brand-orange px-3.5 py-1.5 rounded-full font-bold text-xs tracking-wide">
-                            <Tag className="w-3.5 h-3.5" />
                             {isRTL ? 'أخبار' : 'News'}
                           </span>
                           <span className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500 text-xs font-medium">
-                            <Calendar className="w-3.5 h-3.5" />
                             {format(new Date(post.createdAt), 'MMM d, yyyy', { locale: isRTL ? ar : enUS })}
                           </span>
                         </div>
@@ -342,11 +335,6 @@ export default function BlogPage() {
                         {/* Read More */}
                         <div className="flex items-center text-brand-orange font-semibold text-sm group/link pt-2 border-t border-gray-100 dark:border-slate-800">
                           <span className={isRTL ? 'ml-2' : 'mr-2'}>{isRTL ? 'اقرأ المزيد' : 'Read More'}</span>
-                          {isRTL ? (
-                            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-2" />
-                          ) : (
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-2" />
-                          )}
                         </div>
                       </div>
                     </article>

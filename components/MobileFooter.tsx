@@ -9,6 +9,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import DynamicLogo from './DynamicLogo';
+import AccreditationsManager from './AccreditationsManager';
 
 // ══════════════════════════════════════════════════════════════
 // Hapag-Lloyd style outlined social media SVG icons (mobile)
@@ -409,8 +410,13 @@ export default function MobileFooter() {
                 </div>
             </div>
 
+            {/* ═══ Trust Bar — Mobile Accreditations Card System ═══ */}
+            <div className="mt-4 pt-5 mx-6 border-t border-gray-100 dark:border-white/10">
+                <AccreditationsManager type="footer" />
+            </div>
+
             {/* ── Copyright ──────────────────────────────────── */}
-            <div className="mt-4 mx-6 pt-5 pb-6 border-t border-gray-200 dark:border-white/10">
+            <div className="mx-6 pt-5 pb-6">
                 <p className="text-center text-xs text-gray-500">
                     © {year} SAMA Logistics. {t('copyright')}
                 </p>

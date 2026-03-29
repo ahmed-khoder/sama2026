@@ -819,3 +819,33 @@ model MediaUsage {
   @@unique([mediaId, entity, entityId])
   @@index([entityId])
 }
+
+// ========================================
+// Accreditations & Memberships (Direct Upload)
+// ========================================
+
+model Accreditation {
+  id        String   @id @default(cuid())
+  logo      String   // مسار الصورة /images/accreditations/xxx.png
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order, isActive])
+}
+
+// ========================================
+// Odoo ERP Integration Settings
+// ========================================
+
+model OdooSettings {
+  id        String   @id @default("default")
+  url       String   @default("")
+  database  String   @default("")
+  username  String   @default("")
+  password  String   @default("")
+  isActive  Boolean  @default(true)
+  
+  updatedAt DateTime @updatedAt
+}

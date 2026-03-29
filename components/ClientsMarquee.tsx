@@ -42,7 +42,26 @@ export default function ClientsMarquee() {
         fetchPartners();
     }, []);
 
-    if (isLoading || clients.length === 0) return null;
+    if (clients.length === 0 && !isLoading) return null;
+
+    if (isLoading) {
+        return (
+            <section dir="ltr" className="py-10 bg-white dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800 overflow-hidden">
+                <div className="container mx-auto px-4 mb-6 text-center">
+                    <p className="text-sm font-bold text-marine-600 dark:text-marine-400 uppercase tracking-wider">
+                        {isRTL ? 'شركاء النجاح' : 'Trusted by Industry Leaders'}
+                    </p>
+                </div>
+                <div className="flex gap-6 justify-center px-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="flex-shrink-0 w-36 h-24 md:w-44 md:h-28 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
+                    ))}
+                </div>
+            </section>
+        );
+    }
+
+    if (clients.length === 0) return null;
 
     // ── Row distribution ──
     // Set to `false` to revert to original behavior (both rows show ALL logos)

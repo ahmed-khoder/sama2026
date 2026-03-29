@@ -1,0 +1,35 @@
+# ═══════════════════════════════════════════
+# SAMA Logistics — Docker Compose
+# ═══════════════════════════════════════════
+
+services:
+  sama-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sama-logistics
+    restart: unless-stopped
+    ports:
+      - "3030:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./prisma/dev.db
+      - JWT_SECRET=${JWT_SECRET:-sama-logistics-production-secret-change-me}
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3030
+    volumes:
+      # Persist database outside container
+      - sama-db:/app/prisma
+      # Persist uploaded images
+      - sama-uploads:/app/public/images
+      - sama-uploads-blog:/app/public/uploads
+    networks:
+      - sama-network
+
+volumes:
+  sama-db:
+  sama-uploads:
+  sama-uploads-blog:
+
+networks:
+  sama-network:
+    driver: bridge
