@@ -57,14 +57,11 @@ export default function Contact() {
               <div className="space-y-6">
                 
                 {/* 1. Phone & WhatsApp */}
-                <div className="flex items-start gap-4 group">
+                <div className="flex items-center gap-4 group">
                   <div className="w-12 h-12 bg-marine-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-brand-orange group-hover:bg-brand-orange group-hover:text-white transition-all duration-300 shrink-0">
                     <Smartphone className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-marine-900 dark:text-white mb-2 mt-0.5">
-                      {language === 'ar' ? 'هاتف وواتساب' : 'Phone & WhatsApp'}
-                    </h4>
                     <div className="space-y-2">
                       {/* Number 1 */}
                       <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-950/50 p-2 pl-3 rounded-lg border border-gray-100 dark:border-slate-800 shadow-sm" dir="ltr">
@@ -87,12 +84,11 @@ export default function Contact() {
                 </div>
 
                 {/* 2. Landline */}
-                <div className="flex items-start gap-4 group">
+                <div className="flex items-center gap-4 group">
                   <div className="w-12 h-12 bg-marine-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-brand-orange group-hover:bg-brand-orange group-hover:text-white transition-all duration-300 shrink-0">
                     <Phone className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-marine-900 dark:text-white mb-2 mt-0.5">{language === 'ar' ? 'هاتف أرضي' : 'Landline'}</h4>
                     <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-950/50 p-2 pl-3 rounded-lg border border-gray-100 dark:border-slate-800 shadow-sm" dir="ltr">
                       <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 tracking-wide select-all">+20 66 374 4469</span>
                       <a href="tel:+20663744469" className="w-8 h-8 rounded-md bg-brand-orange/10 flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-colors"><Phone className="w-4 h-4" /></a>
@@ -103,7 +99,6 @@ export default function Contact() {
                 {/* 3. Email */}
                 <ContactItem
                   icon={<Mail className="w-5 h-5" />}
-                  title={language === 'ar' ? 'البريد الإلكتروني' : 'Email'}
                   content="info@samalogs.com"
                   href="mailto:info@samalogs.com"
                 />
@@ -111,7 +106,6 @@ export default function Contact() {
                 {/* 4. Address */}
                 <ContactItem
                   icon={<MapPin className="w-5 h-5" />}
-                  title={language === 'ar' ? 'العنوان' : 'Address'}
                   content={language === 'ar'
                     ? '7 ابراج ارض الجولف، حى الشرق، بورسعيد، جمهورية مصر العربية'
                     : '7 Golf Land Towers, Al-Sharq District, Port Said, Egypt'
@@ -188,24 +182,21 @@ export default function Contact() {
 
 function ContactItem({
   icon,
-  title,
   content,
   href,
   isPhone = false
 }: {
   icon: React.ReactNode;
-  title: string;
   content: string;
   isPhone?: boolean;
   href: string;
 }) {
   return (
-    <a href={href} className="flex items-start gap-4 group">
+    <a href={href} className="flex items-center gap-4 group">
       <div className="w-12 h-12 bg-marine-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-brand-orange group-hover:bg-brand-orange group-hover:text-white transition-all duration-300 shrink-0">
         {icon}
       </div>
       <div>
-        <h4 className="font-medium text-marine-900 dark:text-white mb-1">{title}</h4>
         <p className="text-gray-600 dark:text-gray-400 group-hover:text-marine-600 dark:group-hover:text-marine-400 transition-colors text-sm" dir={isPhone ? 'ltr' : undefined}>
           {content}
         </p>

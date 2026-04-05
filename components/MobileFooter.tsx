@@ -9,7 +9,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import DynamicLogo from './DynamicLogo';
-import AccreditationsManager from './AccreditationsManager';
+
 
 // ══════════════════════════════════════════════════════════════
 // Hapag-Lloyd style outlined social media SVG icons (mobile)
@@ -314,14 +314,11 @@ export default function MobileFooter() {
             <div className="px-6 pb-2">
                 <div className="space-y-3">
                     {/* 1. Phone & WhatsApp (merged) */}
-                    <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-orange/15 to-green-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-orange/15 to-green-500/15 flex items-center justify-center flex-shrink-0">
                             <Phone className="w-4 h-4 text-brand-orange" />
                         </div>
                         <div>
-                            <span className="block text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
-                                {isRTL ? 'هاتف وواتساب' : 'Phone & WhatsApp'}
-                            </span>
                             {/* Number 1 */}
                             <div className="flex items-center gap-1.5 mb-1" dir="ltr">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">+20 122 130 0036</span>
@@ -338,14 +335,11 @@ export default function MobileFooter() {
                     </div>
 
                     {/* 2. Landline */}
-                    <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
                             <Phone className="w-4 h-4 text-brand-orange" />
                         </div>
                         <div>
-                            <span className="block text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
-                                {isRTL ? 'هاتف أرضي' : 'Landline'}
-                            </span>
                             <div className="flex items-center gap-1.5" dir="ltr">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">+20 66 374 4469</span>
                                 <a href="tel:+20663744469" className="w-7 h-7 rounded-lg bg-brand-orange/10 flex items-center justify-center text-brand-orange active:scale-90 transition-transform"><Phone className="w-3.5 h-3.5" /></a>
@@ -354,14 +348,11 @@ export default function MobileFooter() {
                     </div>
 
                     {/* 3. Email */}
-                    <a href="mailto:info@samalogs.com" className="flex items-start gap-3 group">
-                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <a href="mailto:info@samalogs.com" className="flex items-center gap-3 group">
+                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
                             <Mail className="w-4 h-4 text-brand-orange" />
                         </div>
                         <div>
-                            <span className="block text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
-                                {isRTL ? 'البريد' : 'Email'}
-                            </span>
                             <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-brand-orange transition-colors">
                                 info@samalogs.com
                             </span>
@@ -373,15 +364,12 @@ export default function MobileFooter() {
                         href="https://maps.google.com/?q=7+Golf+Land+Towers+Port+Said+Egypt"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-start gap-3 group"
+                        className="flex items-center gap-3 group"
                     >
-                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
                             <MapPin className="w-4 h-4 text-brand-orange" />
                         </div>
                         <div>
-                            <span className="block text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
-                                {isRTL ? 'العنوان' : 'Address'}
-                            </span>
                             <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-brand-orange transition-colors">
                                 {isRTL ? '7 أبراج أرض الجولف، بورسعيد' : '7 Golf Land Towers, Port Said'}
                             </span>
@@ -393,15 +381,12 @@ export default function MobileFooter() {
                         href="https://maps.google.com/?q=East+Port+Said+Port+Egypt"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-start gap-3 group"
+                        className="flex items-center gap-3 group"
                     >
-                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
                             <MapPin className="w-4 h-4 text-brand-orange" />
                         </div>
                         <div>
-                            <span className="block text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
-                                {isRTL ? 'المكتب' : 'Office'}
-                            </span>
                             <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-brand-orange transition-colors">
                                 {isRTL ? 'مكتب 12 بساحة النورس، ميناء شرق بورسعيد' : 'Office 12, Al-Nawras Square, East Port Said Port'}
                             </span>
@@ -410,10 +395,7 @@ export default function MobileFooter() {
                 </div>
             </div>
 
-            {/* ═══ Trust Bar — Mobile Accreditations Card System ═══ */}
-            <div className="mt-4 pt-5 mx-6 border-t border-gray-100 dark:border-white/10">
-                <AccreditationsManager type="footer" />
-            </div>
+
 
             {/* ── Copyright ──────────────────────────────────── */}
             <div className="mx-6 pt-5 pb-6">

@@ -5,7 +5,8 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import {
     Target, Eye, Award, Globe, Shield, Users, Truck,
     Clock, Package, Ship, ArrowRight, ArrowLeft, Sparkles,
-    CheckCircle2, Building2, MapPin, Phone, ChevronLeft, ChevronRight
+    CheckCircle2, Building2, MapPin, Phone, ChevronLeft, ChevronRight,
+    Download, FileText
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import JourneyTimeline, { FuturePulseData } from '@/components/JourneyTimeline';
@@ -778,6 +779,59 @@ export default function AboutPage() {
                                 {isRTL ? 'تعرف على فريق القيادة' : 'Meet Our Leadership Team'}
                                 {isRTL ? <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" /> : <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />}
                             </Link>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* ===== COMPANY PROFILE DOWNLOAD ===== */}
+            <section className="py-16 md:py-20 bg-gradient-to-b from-white to-gray-50 dark:from-slate-900 dark:to-slate-950 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-brand-orange/5 rounded-full blur-[120px]" />
+                    <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-marine-400/5 rounded-full blur-[100px]" />
+                </div>
+
+                <div className="container mx-auto px-4 relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="max-w-3xl mx-auto text-center"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange/10 border border-brand-orange/20 rounded-full mb-6">
+                            <FileText className="w-4 h-4 text-brand-orange" />
+                            <span className="text-xs font-bold text-brand-orange uppercase tracking-[0.15em]">
+                                {isRTL ? 'ملف تعريف الشركة' : 'Company Profile'}
+                            </span>
+                        </div>
+
+                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
+                            {isRTL ? 'حمّل ملف تعريف سما اللوجستية' : 'Download SAMA Logistics Profile'}
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg mb-10 max-w-2xl mx-auto leading-relaxed font-normal">
+                            {isRTL
+                                ? 'احصل على نسخة شاملة من ملف تعريف الشركة بصيغة PDF، يتضمن كافة خدماتنا واعتماداتنا وإنجازاتنا.'
+                                : 'Get a comprehensive copy of our company profile in PDF format, featuring all our services, accreditations, and achievements.'}
+                        </p>
+
+                        <div className="flex flex-col items-center gap-4">
+                            {/* SMART BUTTON — auto-detects browser language */}
+                            <motion.a
+                                href={`/api/company-profile?lang=${language}`}
+                                download
+                                className="group inline-flex items-center gap-4 px-12 py-5 bg-gradient-to-r from-brand-orange via-brand-darkOrange to-brand-orange text-white font-bold text-lg rounded-2xl shadow-2xl shadow-brand-orange/30 hover:shadow-brand-orange/50 transition-all duration-500 relative overflow-hidden"
+                                whileHover={{ scale: 1.05, y: -3 }}
+                                whileTap={{ scale: 0.97 }}
+                            >
+                                {/* Shimmer effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                <Download className="w-6 h-6 group-hover:animate-bounce relative z-10" />
+                                <span className="relative z-10">{isRTL ? 'تحميل ملف تعريف الشركة' : 'Download Company Profile'}</span>
+                                <span className="text-xs bg-white/25 px-3 py-1 rounded-full relative z-10 font-bold tracking-wider">PDF</span>
+                            </motion.a>
+                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                                {isRTL ? 'يتم تحميل النسخة المناسبة تلقائياً حسب لغة متصفحك' : 'Auto-detects your browser language for the right version'}
+                            </p>
                         </div>
                     </motion.div>
                 </div>

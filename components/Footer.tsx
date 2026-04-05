@@ -74,7 +74,7 @@ function SocialIconHL({ icon, href, label }: { icon: React.ReactNode; href: stri
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import DynamicLogo from './DynamicLogo';
-import AccreditationsManager from './AccreditationsManager';
+
 import MobileFooter from './MobileFooter';
 
 export default function Footer() {
@@ -124,10 +124,7 @@ export default function Footer() {
                 <ContactColumn isRTL={isRTL} language={language} />
               </div>
 
-              {/* ═══ Trust Bar — Elevated into empty space ═══ */}
-              <div className="md:col-span-2 lg:col-span-3 lg:col-start-1 lg:self-end pt-4 lg:pt-8">
-                <AccreditationsManager type="footer" />
-              </div>
+
 
             </div>
 
@@ -278,14 +275,11 @@ function ContactColumn({ isRTL, language }: { isRTL: boolean; language: string }
       <ul className="space-y-4">
         {/* 1. Mobile & WhatsApp (merged) */}
         <li>
-          <motion.div whileHover={{ x: 4 }} className="flex items-start gap-3 group">
+          <motion.div whileHover={{ x: 4 }} className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-orange/20 to-green-500/20 dark:from-brand-orange/10 dark:to-green-500/10 flex items-center justify-center flex-shrink-0 text-brand-orange group-hover:scale-110 transition-transform">
               <Phone className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
-                {language === 'ar' ? 'هاتف وواتساب' : 'Phone & WhatsApp'}
-              </span>
               {/* Number 1 */}
               <div className="flex items-center gap-1.5 mb-1" dir="ltr">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 select-all">+20 122 130 0036</span>
@@ -310,14 +304,11 @@ function ContactColumn({ isRTL, language }: { isRTL: boolean; language: string }
 
         {/* 2. Landline */}
         <li>
-          <motion.div whileHover={{ x: 4 }} className="flex items-start gap-3 group">
+          <motion.div whileHover={{ x: 4 }} className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-orange/20 to-brand-gold/20 dark:from-brand-orange/10 dark:to-brand-gold/10 flex items-center justify-center flex-shrink-0 text-brand-orange group-hover:scale-110 transition-transform">
               <Phone className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                {language === 'ar' ? 'هاتف أرضي' : 'Landline'}
-              </span>
               <div className="flex items-center gap-1.5" dir="ltr">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 select-all">+20 66 374 4469</span>
                 <div className="flex items-center gap-0.5">
@@ -332,7 +323,6 @@ function ContactColumn({ isRTL, language }: { isRTL: boolean; language: string }
         {/* 3. Email */}
         <ContactCard
           icon={<Mail className="w-5 h-5" />}
-          label={language === 'ar' ? 'البريد' : 'Email'}
           value="info@samalogs.com"
           href="mailto:info@samalogs.com"
           onCopy={() => copyToClipboard('info@samalogs.com', 'email')}
@@ -342,7 +332,6 @@ function ContactColumn({ isRTL, language }: { isRTL: boolean; language: string }
         {/* 4. Address */}
         <ContactCard
           icon={<MapPin className="w-5 h-5" />}
-          label={language === 'ar' ? 'العنوان' : 'Address'}
           value={language === 'ar' ? '7 أبراج أرض الجولف، بورسعيد' : '7 Golf Land Towers, Port Said'}
           href="https://maps.google.com/?q=7+Golf+Land+Towers+Port+Said+Egypt"
         />
@@ -350,7 +339,6 @@ function ContactColumn({ isRTL, language }: { isRTL: boolean; language: string }
         {/* 5. Office */}
         <ContactCard
           icon={<MapPin className="w-5 h-5" />}
-          label={language === 'ar' ? 'المكتب' : 'Office'}
           value={language === 'ar' ? 'مكتب 12 بساحة النورس، ميناء شرق بورسعيد' : 'Office 12, Al-Nawras Square, East Port Said Port'}
           href="https://maps.google.com/?q=East+Port+Said+Port+Egypt"
         />
@@ -362,7 +350,6 @@ function ContactColumn({ isRTL, language }: { isRTL: boolean; language: string }
 // Contact Card with Copy
 function ContactCard({
   icon,
-  label,
   value,
   href,
   onCopy,
@@ -370,7 +357,6 @@ function ContactCard({
   rtl
 }: {
   icon: React.ReactNode;
-  label: string;
   value: string;
   href?: string;
   onCopy?: () => void;
@@ -380,15 +366,12 @@ function ContactCard({
   const content = (
     <motion.div
       whileHover={{ x: 4 }}
-      className="flex items-start gap-3 group cursor-pointer"
+      className="flex items-center gap-3 group cursor-pointer"
     >
       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-orange/20 to-brand-gold/20 dark:from-brand-orange/10 dark:to-brand-gold/10 flex items-center justify-center flex-shrink-0 text-brand-orange group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <span className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-          {label}
-        </span>
         <span
           className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-brand-orange dark:group-hover:text-brand-orange transition-colors break-words"
           dir={rtl ? "ltr" : undefined}
