@@ -61,16 +61,14 @@ export function hasPermission(
  * Returns null if no permission is required (e.g., the route is not protected).
  */
 export function getPermissionForRoute(pathname: string): string | null {
-  // Match exact or prefix — e.g., /dashboard/messages/123 → view_messages
+  // Dashboard root is always accessible — no permission needed
+  if (pathname === '/dashboard' || pathname === '/dashboard/') return null;
+  
+  // Match sub-routes — e.g., /dashboard/messages/123 → view_messages
   // Sort by route length descending so more-specific routes match first
   const sorted = [...PERMISSIONS].sort((a, b) => b.route.length - a.route.length);
   for (const perm of sorted) {
-    if (perm.route === '/dashboard') {
-      // Only exact match for dashboard root
-      if (pathname === '/dashboard' || pathname === '/dashboard/') {
-        return perm.key;
-      }
-    } else if (pathname.startsWith(perm.route)) {
+    if (perm.route !== '/dashboard' && pathname.startsWith(perm.route)) {
       return perm.key;
     }
   }

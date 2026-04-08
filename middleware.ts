@@ -73,9 +73,11 @@ export async function middleware(request: NextRequest) {
         }
 
         // 3. Permission-based access control (for EMPLOYEE role)
-        if (userRole === 'EMPLOYEE') {
+        //    /dashboard root is always allowed — only sub-routes are checked
+        if (userRole === 'EMPLOYEE' && pathname !== '/dashboard' && pathname !== '/dashboard/') {
             const requiredPermission = getPermissionForRoute(pathname);
             if (requiredPermission && !userPermissions.includes(requiredPermission)) {
+                // Redirect to dashboard root (which is always allowed) with error flag
                 const dashboardUrl = new URL('/dashboard', request.url);
                 dashboardUrl.searchParams.set('error', 'unauthorized');
                 return NextResponse.redirect(dashboardUrl);

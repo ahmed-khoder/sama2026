@@ -308,11 +308,14 @@ export default function SettingsPage() {
 
         setSaving(true);
         try {
-            const res = await fetch(`/api/users/${resetPasswordUserId}`, {
-                method: 'PUT',
+            const res = await fetch('/api/users/change-password', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
-                body: JSON.stringify({ password: resetPasswordValue }),
+                body: JSON.stringify({
+                    userId: resetPasswordUserId,
+                    newPassword: resetPasswordValue,
+                }),
             });
 
             if (res.ok) {
@@ -321,7 +324,8 @@ export default function SettingsPage() {
                 setResetPasswordValue('');
                 setResetPasswordUserId(null);
             } else {
-                error(isRTL ? 'فشل في تغيير كلمة المرور' : 'Failed to reset password');
+                const data = await res.json();
+                error(data.error || (isRTL ? 'فشل في تغيير كلمة المرور' : 'Failed to reset password'));
             }
         } catch (err) {
             error(isRTL ? 'حدث خطأ' : 'An error occurred');
@@ -406,12 +410,13 @@ export default function SettingsPage() {
 
         setSaving(true);
         try {
-            // Call password change API
-            const res = await fetch(`/api/users/${currentUser.id}/password`, {
-                method: 'PUT',
+            // Call unified password change API
+            const res = await fetch('/api/users/change-password', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
                 body: JSON.stringify({
+                    userId: currentUser.id,
                     currentPassword: passwordData.currentPassword,
                     newPassword: passwordData.newPassword,
                 }),
@@ -1115,7 +1120,7 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-3 bg-gray-50 dark:bg-slate-900 rounded-xl ring-1 ring-gray-200 dark:ring-slate-600">
-                                            {PERMISSIONS.map((perm) => (
+                                            {PERMISSIONS.filter(p => p.key !== 'view_analytics').map((perm) => (
                                                 <label
                                                     key={perm.key}
                                                     className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
@@ -1148,6 +1153,41 @@ export default function SettingsPage() {
                                                 : `${formData.permissions.length} of ${ALL_PERMISSION_KEYS.length} permissions selected`
                                             }
                                         </p>
+
+                                        {/* ── Analytics Permission — Separate Section ── */}
+                                        <div className="mt-2 p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 ring-1 ring-indigo-200/60 dark:ring-indigo-700/40">
+                                            <label
+                                                className={`flex items-center gap-3 cursor-pointer transition-all rounded-lg p-1 ${
+                                                    formData.permissions.includes('view_analytics')
+                                                        ? 'opacity-100'
+                                                        : 'opacity-70 hover:opacity-100'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.permissions.includes('view_analytics')}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setFormData({ ...formData, permissions: [...formData.permissions, 'view_analytics'] });
+                                                        } else {
+                                                            setFormData({ ...formData, permissions: formData.permissions.filter(p => p !== 'view_analytics') });
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-600"
+                                                />
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-base">📊</span>
+                                                    <div>
+                                                        <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                                                            {isRTL ? 'إحصائيات الموقع' : 'Website Analytics'}
+                                                        </span>
+                                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">
+                                                            {isRTL ? 'عرض بيانات الزوار والتحميلات' : 'View visitor data & downloads'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
                                     </div>
                                 )}
                             </div>

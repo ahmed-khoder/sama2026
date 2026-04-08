@@ -532,5 +532,15 @@ export const getTabCategories = (isRTL: boolean) => [
         tabs: [
             { id: 'blog-settings', labelAr: 'إعدادات الهيرو', labelEn: 'Hero Settings' },
         ]
+    },
+    {
+        id: 'profile',
+        labelAr: '📄 بروفايل الشركة',
+        labelEn: '📄 Company Profile',
+        descAr: 'رفع وتحديث ملف البروفايل PDF',
+        descEn: 'Upload and update company profile PDF',
+        tabs: [
+            { id: 'company-profile', labelAr: 'رفع البروفايل', labelEn: 'Profile Upload' },
+        ]
     }
 ];

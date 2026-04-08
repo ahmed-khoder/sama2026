@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from '@/providers';
 import ClientLayoutWrapper from '@/components/ClientLayoutWrapper';
 import JsonLd from '@/components/JsonLd';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -159,8 +160,11 @@ export default function RootLayout({
         {/* DNS Prefetch */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
+
       </head>
       <body className={`${inter.variable} ${cairo.variable} ${tajawal.variable} ${outfit.variable} ${rubik.variable} font-sans antialiased`}>
+        {/* Google Analytics 4 — Production only */}
+        <GoogleAnalytics />
         {/* Structured Data (JSON-LD) */}
         <JsonLd />
 

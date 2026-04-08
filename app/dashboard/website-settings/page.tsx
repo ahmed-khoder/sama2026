@@ -14,6 +14,7 @@ import { getTabCategories } from './types';
 // Import custom hook
 import { useWebsiteSettings } from './hooks';
 import { BlogHeroSettingsTab } from './components/tabs/blog';
+import CompanyProfileTab from './components/tabs/CompanyProfileTab';
 
 // Import components
 import { HeroPreview } from './components/HeroPreview';
@@ -562,6 +563,10 @@ export default function WebsiteSettingsPage() {
                     <BlogHeroSettingsTab isRTL={isRTL} uploadImage={uploadImage} />
                 );
 
+
+            // Company Profile tab
+            case 'company-profile':
+                return <CompanyProfileTab />;
 
             default:
                 return null;

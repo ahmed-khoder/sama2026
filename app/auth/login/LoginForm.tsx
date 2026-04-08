@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+// START UI ENHANCEMENT — added Eye/EyeOff for password toggle, Shield for security badge
+import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, Shield } from 'lucide-react';
+// END UI ENHANCEMENT
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +16,9 @@ export default function LoginForm() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    // START UI ENHANCEMENT — password visibility state
+    const [showPassword, setShowPassword] = useState(false);
+    // END UI ENHANCEMENT
     const router = useRouter();
     const { user, loading, login } = useAuth();
     const { language } = useLanguage();
@@ -117,14 +122,16 @@ export default function LoginForm() {
                                     {t.emailLabel}
                                 </label>
                                 <div className="relative group">
+                                    {/* START UI ENHANCEMENT — improved focus: glow shadow + bg shift + hover border */}
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className={`w-full py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 outline-none transition-all text-marine-900 placeholder:text-gray-400 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
+                                        className={`w-full py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 focus:shadow-lg focus:shadow-marine-500/5 focus:bg-white outline-none transition-all duration-300 text-marine-900 placeholder:text-gray-400 hover:border-gray-300 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
                                         placeholder="name@company.com"
                                         required
                                     />
+                                    {/* END UI ENHANCEMENT */}
                                     <div className={`absolute top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-marine-500 transition-colors ${isRTL ? 'left-3' : 'right-3'}`}>
                                         <Mail className="w-5 h-5" />
                                     </div>
@@ -137,14 +144,27 @@ export default function LoginForm() {
                                     <Link href="/auth/forgot-password" className="text-sm font-medium text-marine-500 hover:text-marine-700 hover:underline">{t.forgotPassword}</Link>
                                 </div>
                                 <div className="relative group">
+                                    {/* START UI ENHANCEMENT — toggle visibility + improved focus + extra padding for eye toggle */}
                                     <input
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className={`w-full py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 outline-none transition-all text-marine-900 placeholder:text-gray-400 ${isRTL ? 'pr-4 pl-10' : 'pl-4 pr-10'}`}
+                                        className={`w-full py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:border-marine-500 focus:ring-4 focus:ring-marine-500/10 focus:shadow-lg focus:shadow-marine-500/5 focus:bg-white outline-none transition-all duration-300 text-marine-900 placeholder:text-gray-400 hover:border-gray-300 ${isRTL ? 'pr-4 pl-20' : 'pl-4 pr-20'}`}
                                         placeholder="••••••••"
                                         required
                                     />
+                                    {/* END UI ENHANCEMENT */}
+                                    {/* START UI ENHANCEMENT — show/hide password eye icon button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className={`absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-marine-600 transition-colors duration-200 p-1 rounded-lg hover:bg-gray-100 focus:outline-none ${isRTL ? 'left-10' : 'right-10'}`}
+                                        tabIndex={-1}
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+                                    </button>
+                                    {/* END UI ENHANCEMENT */}
                                     <div className={`absolute top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-marine-500 transition-colors ${isRTL ? 'left-3' : 'right-3'}`}>
                                         <Lock className="w-5 h-5" />
                                     </div>
@@ -152,11 +172,26 @@ export default function LoginForm() {
                             </div>
                         </div>
 
+                        {/* START UI ENHANCEMENT — gradient CTA button with brand-orange, shimmer loading state */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-marine-600 hover:bg-marine-700 text-white font-bold rounded-xl shadow-lg shadow-marine-600/20 hover:shadow-marine-600/30 transition-all flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                            className={`w-full py-4 relative overflow-hidden font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2.5 group active:scale-[0.98] disabled:cursor-not-allowed ${
+                                isLoading
+                                    ? 'bg-marine-500 text-white/90'
+                                    : 'bg-gradient-to-r from-brand-orange to-brand-darkOrange hover:from-brand-darkOrange hover:to-brand-orange text-white hover:shadow-xl hover:-translate-y-0.5'
+                            }`}
                         >
+                            {isLoading && (
+                                <div
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)',
+                                        backgroundSize: '200% 100%',
+                                        animation: 'shimmer 1.5s linear infinite',
+                                    }}
+                                />
+                            )}
                             {isLoading ? (
                                 <>
                                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -165,10 +200,11 @@ export default function LoginForm() {
                             ) : (
                                 <>
                                     {t.loginButton}
-                                    <ArrowRight className={`w-5 h-5 transition-transform ${isRTL ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
+                                    <ArrowRight className={`w-5 h-5 transition-transform duration-300 ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
                                 </>
                             )}
                         </button>
+                        {/* END UI ENHANCEMENT */}
                     </form>
 
                     <div className="pt-6 border-t border-gray-100 text-center">
@@ -178,9 +214,12 @@ export default function LoginForm() {
                                 {t.createAccount}
                             </Link>
                         </p>
-                        <p className="mt-4 text-xs text-gray-400">
+                        {/* START UI ENHANCEMENT — shield icon on security line */}
+                        <p className="mt-4 text-xs text-gray-400 flex items-center justify-center gap-1.5">
+                            <Shield className="w-3.5 h-3.5 text-green-500" />
                             {t.securedBy}
                         </p>
+                        {/* END UI ENHANCEMENT */}
                     </div>
                 </div>
             </div>
@@ -217,6 +256,15 @@ export default function LoginForm() {
                     </div>
                 </div>
             </div>
+
+            {/* START UI ENHANCEMENT — local shimmer keyframe for loading button (no config change) */}
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes shimmer {
+                    0% { background-position: -200% 0; }
+                    100% { background-position: 200% 0; }
+                }
+            `}} />
+            {/* END UI ENHANCEMENT */}
 
         </div>
     );
