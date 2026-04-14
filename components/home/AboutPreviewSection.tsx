@@ -38,7 +38,7 @@ export default function AboutPreviewSection({
                                 <motion.img
                                     key={aboutIndex}
                                     src={aboutImages[aboutIndex]}
-                                    alt="Sama Logistics"
+                                    alt="SAMA Logistics operations — Port Said, Egypt"
                                     initial={{ opacity: 0, x: 100 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -100 }}

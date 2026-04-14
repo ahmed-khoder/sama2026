@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Partner {
@@ -8,58 +8,11 @@ interface Partner {
     logo: string;
 }
 
-export default function ClientsMarquee() {
+export default function ClientsMarquee({ clients }: { clients: Partner[] }) {
     const { language } = useLanguage();
     const isRTL = language === 'ar';
-    const [clients, setClients] = useState<Partner[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const fetchPartners = async () => {
-            try {
-                const res = await fetch('/api/odoo/featured-partners');
-                if (!res.ok) throw new Error('Failed to fetch partners');
-                const data = await res.json();
-                if (data.partners && data.partners.length > 0) {
-                    const mapped: Partner[] = data.partners
-                        .filter((p: any) => p.image_128 && p.image_128.startsWith('data:image'))
-                        .map((p: any) => ({
-                            name: p.name,
-                            logo: p.image_128,
-                        }));
-                    if (mapped.length > 0) {
-                        setClients(mapped);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching featured partners:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchPartners();
-    }, []);
-
-    if (clients.length === 0 && !isLoading) return null;
-
-    if (isLoading) {
-        return (
-            <section dir="ltr" className="py-10 bg-white dark:bg-slate-950 border-y border-gray-100 dark:border-slate-800 overflow-hidden">
-                <div className="container mx-auto px-4 mb-6 text-center">
-                    <p className="text-sm font-bold text-marine-600 dark:text-marine-400 uppercase tracking-wider">
-                        {isRTL ? 'شركاء النجاح' : 'Trusted by Industry Leaders'}
-                    </p>
-                </div>
-                <div className="flex gap-6 justify-center px-4">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="flex-shrink-0 w-36 h-24 md:w-44 md:h-28 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-                    ))}
-                </div>
-            </section>
-        );
-    }
 
     if (clients.length === 0) return null;
 
@@ -87,7 +40,7 @@ export default function ClientsMarquee() {
         >
             <img
                 src={client.logo}
-                alt=""
+                alt={client.name}
                 className="w-full h-full object-contain"
             />
         </div>

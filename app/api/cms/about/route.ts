@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth-middleware';
 import { aboutSettingsSchema } from '@/lib/validations';
 import { revalidatePath } from 'next/cache';
+import { sanitizeRecord } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +50,7 @@ export async function GET() {
             features: JSON.parse(settings.featuresJson || '[]')
         };
 
-        return NextResponse.json(response);
+        return NextResponse.json(sanitizeRecord(response));
     } catch (error: unknown) {
         console.error('Error fetching about settings:', error);
         return NextResponse.json({ error: 'Failed to fetch about settings' }, { status: 500 });

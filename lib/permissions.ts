@@ -23,6 +23,7 @@ export const PERMISSIONS: PermissionDef[] = [
   { key: 'view_quotes',      labelAr: 'عروض الأسعار',        labelEn: 'Quotes',             route: '/dashboard/quotes' },
   { key: 'view_customers',   labelAr: 'العملاء',             labelEn: 'Customers',          route: '/dashboard/customers' },
   { key: 'view_analytics',   labelAr: 'التحليلات',           labelEn: 'Analytics',          route: '/dashboard/analytics' },
+  { key: 'view_conversion_analytics', labelAr: 'تحليل التحويلات', labelEn: 'Conversion Analytics', route: '/dashboard/analytics' },
   { key: 'view_inventory',   labelAr: 'المخزون',             labelEn: 'Inventory',          route: '/dashboard/inventory' },
   { key: 'manage_blog',      labelAr: 'إدارة المدونة',       labelEn: 'Blog Management',    route: '/dashboard/blog' },
   { key: 'manage_website',   labelAr: 'إعدادات الموقع',      labelEn: 'Website Settings',   route: '/dashboard/website-settings' },

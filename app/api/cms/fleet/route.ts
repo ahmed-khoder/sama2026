@@ -37,11 +37,18 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        if (!body.image) {
+            return NextResponse.json(
+                { error: 'Image is required. Please upload an image before saving.' },
+                { status: 400 }
+            );
+        }
+
         const truck = await prisma.fleetTruck.create({
             data: {
                 nameAr: body.nameAr,
                 nameEn: body.nameEn,
-                image: body.image || null,
+                image: body.image,
                 descAr: body.descAr || '',
                 descEn: body.descEn || '',
                 specsJson: body.specsJson || '[]',

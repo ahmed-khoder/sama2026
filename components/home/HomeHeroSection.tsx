@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { HeroSlideshow } from '@/components/HeroSlideshow';
@@ -10,6 +10,7 @@ import { HomeHeroSettings, HomeHeroSlide, highlightText, getOverlayColor } from 
 import {
     ArrowRight, ArrowLeft, Ship, Truck, FileCheck, Sparkles,
 } from 'lucide-react';
+import { trackEvent } from '@/components/GoogleAnalytics';
 
 // Services Quick View - 3 Main Services (glass cards)
 const services = [
@@ -33,23 +34,39 @@ export default function HomeHeroSection({
     language, isRTL, isMobile,
     heroSlides, heroSettings, heroIndex, setHeroIndex, stats
 }: HomeHeroSectionProps) {
-    const goNext = useCallback(() =>
-        setHeroIndex((heroIndex + 1) % heroSlides.length),
-        [heroIndex, heroSlides.length, setHeroIndex]
-    );
-    const goPrev = useCallback(() =>
-        setHeroIndex((heroIndex - 1 + heroSlides.length) % heroSlides.length),
-        [heroIndex, heroSlides.length, setHeroIndex]
-    );
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const resetTimer = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (heroSlides.length <= 1) { timerRef.current = null; return; }
+        const id = setInterval(() => {
+            // Guard: if this interval was invalidated by a manual action, bail
+            if (timerRef.current !== id) return;
+            setHeroIndex(prev => (prev + 1) % heroSlides.length);
+        }, 5000);
+        timerRef.current = id;
+    }, [heroSlides.length, setHeroIndex]);
+
+    const goNext = useCallback(() => {
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        setHeroIndex(prev => (prev + 1) % heroSlides.length);
+        resetTimer();
+    }, [heroSlides.length, setHeroIndex, resetTimer]);
+
+    const goPrev = useCallback(() => {
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        setHeroIndex(prev => (prev - 1 + heroSlides.length) % heroSlides.length);
+        resetTimer();
+    }, [heroSlides.length, setHeroIndex, resetTimer]);
 
     // Auto-advance slideshow
     useEffect(() => {
-        if (heroSlides.length <= 1) return;
-        const timer = setInterval(() => {
-            setHeroIndex((heroIndex + 1) % heroSlides.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [heroIndex, heroSlides.length, setHeroIndex]);
+        resetTimer();
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+            timerRef.current = null;
+        };
+    }, [resetTimer]);
 
     return (
         <section className="relative min-h-screen flex flex-col overflow-hidden">
@@ -170,6 +187,7 @@ export default function HomeHeroSection({
                     >
                         <Link
                             href="/contact?tab=quote"
+                            onClick={() => trackEvent('quote_click', { page: 'home', location: 'hero' })}
                             className="px-8 py-4 bg-brand-orange hover:bg-brand-darkOrange text-white font-semibold rounded-xl shadow-lg shadow-brand-orange/25 flex items-center gap-2 transition-all hover:scale-[1.03] hover:-translate-y-0.5"
                         >
                             {isRTL ? 'اطلب عرض سعر' : 'Get a Quote'}
@@ -272,7 +290,11 @@ export default function HomeHeroSection({
                     {heroSlides.map((_, idx) => (
                         <button
                             key={idx}
-                            onClick={() => setHeroIndex(idx)}
+                            onClick={() => {
+                                if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+                                setHeroIndex(idx);
+                                resetTimer();
+                            }}
                             className={`h-2 rounded-full transition-all duration-300 ${idx === heroIndex
                                 ? 'w-8 bg-brand-orange'
                                 : 'w-2 bg-white/40 hover:bg-white/60'

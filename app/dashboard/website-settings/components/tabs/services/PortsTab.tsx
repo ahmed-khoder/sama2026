@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Save, Anchor, Upload } from 'lucide-react';
+import { Plus, Trash2, Save, Anchor, Upload, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PortOperationItem } from '../../../types';
 import { authFetch } from '@/lib/auth-fetch';
@@ -22,6 +22,7 @@ export function PortsTab({ ports, onAdd, onUpdate, onDelete }: Props) {
     const [showAdd, setShowAdd] = useState(false);
     const [newPort, setNewPort] = useState<Partial<PortOperationItem>>({ nameAr: '', nameEn: '', descAr: '', descEn: '', factsJson: '[]' });
     const [uploading, setUploading] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     const handleImageUpload = async (file: File, callback: (path: string) => void) => {
         setUploading(true);
@@ -64,7 +65,8 @@ export function PortsTab({ ports, onAdd, onUpdate, onDelete }: Props) {
                             <div className="col-span-2"><label className="text-xs text-gray-500">{isRTL ? 'الوصف (عربي)' : 'Description (AR)'}</label><textarea value={newPort.descAr || ''} onChange={e => setNewPort(p => ({ ...p, descAr: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 text-sm" /></div>
                             <div className="col-span-2"><label className="text-xs text-gray-500">{isRTL ? 'الوصف (إنجليزي)' : 'Description (EN)'}</label><textarea value={newPort.descEn || ''} onChange={e => setNewPort(p => ({ ...p, descEn: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 text-sm" /></div>
                             <div className="col-span-2">
-                                <label className="text-xs text-gray-500">{isRTL ? 'الصورة' : 'Image'}</label>
+                                <label className="text-xs text-gray-500 flex items-center gap-1">{isRTL ? 'الصورة' : 'Image'} <span className="text-red-500">*</span></label>
+                                {imageError && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle className="w-3 h-3" />{isRTL ? 'الصورة مطلوبة' : 'Image is required'}</p>}
                                 <div className="flex items-center gap-2">
                                     {newPort.image && <img src={newPort.image} alt="" className="w-16 h-12 object-cover rounded" />}
                                     <label className="cursor-pointer flex items-center gap-1.5 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -75,7 +77,7 @@ export function PortsTab({ ports, onAdd, onUpdate, onDelete }: Props) {
                             </div>
                             <div className="col-span-2"><label className="text-xs text-gray-500">{isRTL ? 'الحقائق (JSON)' : 'Facts (JSON)'}</label><textarea value={newPort.factsJson || '[]'} onChange={e => setNewPort(p => ({ ...p, factsJson: e.target.value }))} rows={3} className="w-full px-3 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 text-sm font-mono text-xs" placeholder='[{"ar":"بوابة قناة السويس","en":"Gateway to the Suez Canal"}]' /></div>
                         </div>
-                        <button onClick={async () => { const ok = await onAdd(newPort); if (ok) { setNewPort({ nameAr: '', nameEn: '', descAr: '', descEn: '', factsJson: '[]' }); setShowAdd(false); } }} className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                        <button onClick={async () => { if (!newPort.image) { setImageError(true); return; } setImageError(false); const ok = await onAdd(newPort); if (ok) { setNewPort({ nameAr: '', nameEn: '', descAr: '', descEn: '', factsJson: '[]' }); setShowAdd(false); } }} className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
                             {isRTL ? 'إضافة ميناء' : 'Add Port'}
                         </button>
                     </motion.div>

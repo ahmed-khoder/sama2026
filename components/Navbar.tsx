@@ -271,7 +271,7 @@ export default function Navbar() {
                   <div className="flex items-center gap-1">
                     {/* Theme Toggle in mobile menu */}
                     <button
-                      onClick={toggleTheme}
+                      onClick={() => { toggleTheme(); setIsOpen(false); }}
                       className="p-2 text-marine-700 dark:text-brand-orange hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md"
                       aria-label="Toggle Theme"
                     >
@@ -283,7 +283,7 @@ export default function Navbar() {
                     </button>
                     {/* Language Toggle in mobile menu */}
                     <button
-                      onClick={toggleLanguage}
+                      onClick={() => { toggleLanguage(); setIsOpen(false); }}
                       className="p-2 text-marine-700 dark:text-marine-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md font-bold text-sm"
                       aria-label="Toggle Language"
                     >

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, MessageSquare, FileText, MapPin, ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { trackConversion } from '@/components/GoogleAnalytics';
 import PhoneInput from '@/components/ui/PhoneInput';
 import ContainerSelector, { ContainerType } from './ContainerSelector';
 
@@ -106,6 +107,12 @@ export default function ContactForm({ language = 'ar', onSuccess, defaultType = 
             if (!res.ok) throw new Error('Failed to submit');
 
             setSubmitStatus('success');
+            // Track conversion — only fires on actual successful submission
+            trackConversion('quote_submit', {
+                page: 'contact',
+                location: 'form',
+                form_type: formData.type === 'QUOTE_REQUEST' ? 'quote' : 'inquiry',
+            });
             setFormData(initialFormData);
             onSuccess?.();
         } catch {

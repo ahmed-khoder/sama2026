@@ -369,6 +369,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (mounted) {
       localStorage.setItem('language', language);
+      document.cookie = `language=${language};path=/;max-age=31536000;SameSite=Lax`;
       document.documentElement.lang = language;
       document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     }

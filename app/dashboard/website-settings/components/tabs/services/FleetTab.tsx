@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Save, Truck, Upload } from 'lucide-react';
+import { Plus, Trash2, Save, Truck, Upload, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FleetTruckItem } from '../../../types';
 import { authFetch } from '@/lib/auth-fetch';
@@ -22,6 +22,7 @@ export function FleetTab({ trucks, onAdd, onUpdate, onDelete }: Props) {
     const [showAdd, setShowAdd] = useState(false);
     const [newTruck, setNewTruck] = useState<Partial<FleetTruckItem>>({ nameAr: '', nameEn: '', descAr: '', descEn: '', specsJson: '[]' });
     const [uploading, setUploading] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     const handleImageUpload = async (file: File, callback: (path: string) => void) => {
         setUploading(true);
@@ -70,7 +71,8 @@ export function FleetTab({ trucks, onAdd, onUpdate, onDelete }: Props) {
                             <div className="col-span-2"><label className="text-xs text-gray-500">{isRTL ? 'الوصف (عربي)' : 'Description (AR)'}</label><textarea value={newTruck.descAr || ''} onChange={e => setNewTruck(p => ({ ...p, descAr: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 text-sm" /></div>
                             <div className="col-span-2"><label className="text-xs text-gray-500">{isRTL ? 'الوصف (إنجليزي)' : 'Description (EN)'}</label><textarea value={newTruck.descEn || ''} onChange={e => setNewTruck(p => ({ ...p, descEn: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 text-sm" /></div>
                             <div className="col-span-2">
-                                <label className="text-xs text-gray-500">{isRTL ? 'الصورة' : 'Image'}</label>
+                                <label className="text-xs text-gray-500 flex items-center gap-1">{isRTL ? 'الصورة' : 'Image'} <span className="text-red-500">*</span></label>
+                                {imageError && <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><AlertCircle className="w-3 h-3" />{isRTL ? 'الصورة مطلوبة' : 'Image is required'}</p>}
                                 <div className="flex items-center gap-2">
                                     {newTruck.image && <img src={newTruck.image} alt="" className="w-16 h-12 object-cover rounded" />}
                                     <label className="cursor-pointer flex items-center gap-1.5 px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -81,7 +83,7 @@ export function FleetTab({ trucks, onAdd, onUpdate, onDelete }: Props) {
                             </div>
                             <div className="col-span-2"><label className="text-xs text-gray-500">{isRTL ? 'المواصفات (JSON)' : 'Specs (JSON)'}</label><textarea value={newTruck.specsJson || '[]'} onChange={e => setNewTruck(p => ({ ...p, specsJson: e.target.value }))} rows={3} className="w-full px-3 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 text-sm font-mono text-xs" placeholder='[{"labelAr":"المحرك","labelEn":"Engine","valueAr":"V6","valueEn":"V6"}]' /></div>
                         </div>
-                        <button onClick={async () => { const ok = await onAdd(newTruck); if (ok) { setNewTruck({ nameAr: '', nameEn: '', descAr: '', descEn: '', specsJson: '[]' }); setShowAdd(false); } }} className="w-full py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium">
+                        <button onClick={async () => { if (!newTruck.image) { setImageError(true); return; } setImageError(false); const ok = await onAdd(newTruck); if (ok) { setNewTruck({ nameAr: '', nameEn: '', descAr: '', descEn: '', specsJson: '[]' }); setShowAdd(false); } }} className="w-full py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium">
                             {isRTL ? 'إضافة شاحنة' : 'Add Truck'}
                         </button>
                     </motion.div>

@@ -45,6 +45,7 @@ interface HomePageClientProps {
     initialStats: { value: string; labelAr: string; labelEn: string; icon: string }[];
     initialAboutContent: AboutContent;
     initialAboutImages: string[];
+    initialClients: { name: string; logo: string }[];
 }
 
 export default function HomePageClient({
@@ -54,28 +55,22 @@ export default function HomePageClient({
     initialStats,
     initialAboutContent,
     initialAboutImages,
+    initialClients,
 }: HomePageClientProps) {
     const { language } = useLanguage();
     const isRTL = language === 'ar';
     const isMobile = useIsMobile();
 
-    // ─── State initialized from SSR props — NO useEffect delay ───
-    const [heroSlides] = useState<HomeHeroSlide[]>(initialHeroSlides);
-    const [heroSettings] = useState<HomeHeroSettings>(initialHeroSettings);
-    const [teamMembers] = useState(initialTeamMembers);
-    const [stats] = useState(initialStats);
-    const [aboutContent] = useState<AboutContent>(initialAboutContent);
-    const [aboutImages] = useState(initialAboutImages);
+    // ─── Static props from SSR — no state needed ───
+    const heroSlides = initialHeroSlides;
+    const heroSettings = initialHeroSettings;
+    const teamMembers = initialTeamMembers;
+    const stats = initialStats;
+    const aboutContent = initialAboutContent;
+    const aboutImages = initialAboutImages;
 
-    // Hero slideshow index
+    // Hero slideshow index (timer is managed by HomeHeroSection)
     const [heroIndex, setHeroIndex] = useState(0);
-    useEffect(() => {
-        if (heroSlides.length <= 1) return;
-        const timer = setInterval(() => {
-            setHeroIndex((prev) => (prev + 1) % heroSlides.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [heroSlides.length]);
 
     // About section image carousel
     const [aboutIndex, setAboutIndex] = useState(0);
@@ -109,7 +104,7 @@ export default function HomePageClient({
             <WhyChooseSection isRTL={isRTL} />
 
             {/* ===== CLIENTS MARQUEE ===== */}
-            <ClientsMarquee key={`clients-${language}`} />
+            <ClientsMarquee clients={initialClients} />
 
             {/* ===== ABOUT PREVIEW ===== */}
             <AboutPreviewSection

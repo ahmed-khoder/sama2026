@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -53,15 +53,37 @@ export function HeroSlideshow({
         else setInternalIndex(idx);
     };
 
-    // Get all image URLs
-    const imageUrls = slides.map(slide => getImageUrl(slide, language, isMobile) || fallbackImage);
+    // Get all image URLs — memoized to prevent re-creation on every render
+    const imageUrls = useMemo(
+        () => slides.map(slide => getImageUrl(slide, language, isMobile) || fallbackImage),
+        [slides, language, isMobile, fallbackImage, getImageUrl]
+    );
 
-    // Content-based key so preloading re-triggers when slide URLs actually change
-    const slidesKey = imageUrls.join('|');
+    // Track whether the first (LCP) slide has loaded
+    const firstSlideLoadedRef = useRef(false);
+    const handleFirstSlideLoad = useCallback(() => {
+        firstSlideLoadedRef.current = true;
+    }, []);
 
-    // ─── Preload the NEXT image on every index change ───
+    // ─── Immediate preload of slide 1 only — ensures interaction readiness ───
+    // Uses low priority (no fetchpriority hint) so the browser naturally
+    // prioritizes the LCP image (fetchpriority="high") over this.
+    const slide1PreloadedRef = useRef(false);
+    useEffect(() => {
+        if (slides.length <= 1 || slide1PreloadedRef.current) return;
+        slide1PreloadedRef.current = true;
+        const nextUrl = imageUrls[1];
+        if (nextUrl) {
+            const img = new window.Image();
+            img.src = nextUrl;
+        }
+    }, [slides.length, imageUrls]);
+
+    // ─── Preload the NEXT image on every slide change ───
     useEffect(() => {
         if (slides.length <= 1) return;
+        // On initial render (index 0), slide 1 is already handled above
+        if (currentIndex === 0) return;
         const nextIndex = (currentIndex + 1) % slides.length;
         const nextUrl = imageUrls[nextIndex];
         if (nextUrl) {
@@ -70,14 +92,33 @@ export function HeroSlideshow({
         }
     }, [currentIndex, slides.length, imageUrls]);
 
-    // ─── Also preload ALL images on mount for instant first transitions ───
+    // ─── Progressive preload: stagger remaining slides AFTER first slide loads ───
     useEffect(() => {
-        if (slides.length === 0) return;
-        imageUrls.forEach((url) => {
-            const img = new window.Image();
-            img.src = url;
-        });
-    }, [slidesKey]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (slides.length <= 2) return; // slides 0 and 1 already handled
+        const timers: ReturnType<typeof setTimeout>[] = [];
+        const startPreloading = () => {
+            imageUrls.forEach((url, i) => {
+                if (i <= 1) return; // slide 0 (LCP) and slide 1 (immediate) already handled
+                const timer = setTimeout(() => {
+                    const img = new window.Image();
+                    img.src = url;
+                }, (i - 1) * 1000); // stagger by 1s each, starting sooner
+                timers.push(timer);
+            });
+        };
+        if (firstSlideLoadedRef.current) {
+            startPreloading();
+        } else {
+            const check = setInterval(() => {
+                if (firstSlideLoadedRef.current) {
+                    clearInterval(check);
+                    startPreloading();
+                }
+            }, 200);
+            timers.push(check as unknown as ReturnType<typeof setTimeout>);
+        }
+        return () => timers.forEach(t => clearTimeout(t));
+    }, [imageUrls, slides.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Auto-advance slides — only when NOT in controlled mode.
     useEffect(() => {
@@ -95,7 +136,7 @@ export function HeroSlideshow({
             <div className="absolute inset-0">
                 <Image
                     src={fallbackImage}
-                    alt="Hero"
+                    alt="Freight and container transport — SAMA Logistics, Port Said"
                     fill
                     priority
                     className="object-cover"
@@ -123,10 +164,12 @@ export function HeroSlideshow({
                         src={currentUrl}
                         alt="SAMA Logistics"
                         fill
-                        priority
+                        priority={currentIndex === 0}
+                        loading={currentIndex === 0 ? 'eager' : 'lazy'}
                         quality={80}
                         sizes="100vw"
                         className="object-cover object-center"
+                        onLoad={currentIndex === 0 ? handleFirstSlideLoad : undefined}
                     />
                 </motion.div>
             </AnimatePresence>

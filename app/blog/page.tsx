@@ -167,7 +167,8 @@ export default function BlogPage() {
           ) : heroImage ? (
             <img
               src={heroImage}
-              alt="Blog Background"
+              alt=""
+              aria-hidden="true"
               className="w-full h-full object-cover"
               style={{ filter: heroSettings.blurAmount > 0 ? `blur(${heroSettings.blurAmount}px)` : undefined }}
             />

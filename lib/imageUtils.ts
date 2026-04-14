@@ -40,3 +40,38 @@ export function getLanguageAwareImage(
 
     return null;
 }
+
+/** Default SVG avatar placeholder for team members */
+const TEAM_AVATAR_FALLBACK =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400' fill='%23cbd5e1'%3E%3Crect width='300' height='400' fill='%23e2e8f0'/%3E%3Ccircle cx='150' cy='140' r='55' fill='%23cbd5e1'/%3E%3Cellipse cx='150' cy='300' rx='80' ry='70' fill='%23cbd5e1'/%3E%3C/svg%3E";
+
+/**
+ * Resolve a team member image path to ensure it's valid and correctly located.
+ *
+ * - Empty / missing → returns SVG avatar placeholder
+ * - Legacy flat path (e.g. `/images/name.png`) → normalises to `/images/team/name.png`
+ * - Already correct (`/images/team/…`) or external URL → returned as-is
+ */
+export function resolveTeamImage(imagePath: string | null | undefined): string {
+    if (!imagePath || !imagePath.trim()) return TEAM_AVATAR_FALLBACK;
+
+    const trimmed = imagePath.trim();
+
+    // External URLs or data URIs — pass through
+    if (trimmed.startsWith('http') || trimmed.startsWith('data:')) return trimmed;
+
+    // Already in the correct directory
+    if (trimmed.startsWith('/images/team/')) return trimmed;
+
+    // Legacy flat path: /images/somefile.ext → /images/team/somefile.ext
+    // ONLY matches files directly under /images/ (no subdirectory).
+    // Paths like /images/services/x.png or /images/blog/y.webp are NEVER touched.
+    const legacyFlatFile = trimmed.match(/^\/images\/([^/]+\.\w+)$/);
+    if (legacyFlatFile) {
+        return `/images/team/${legacyFlatFile[1]}`;
+    }
+
+    return trimmed;
+}
+
+export { TEAM_AVATAR_FALLBACK };

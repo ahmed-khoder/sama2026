@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth-middleware';
 import { registerMedia, linkMedia } from '@/lib/media-library';
+import { sanitizeRecord } from '@/lib/sanitize';
 
 // Force Node.js runtime (required for sharp)
 export const runtime = 'nodejs';
@@ -20,7 +21,7 @@ export async function GET() {
             select: { id: true, logo: true, order: true },
         });
 
-        return NextResponse.json(items, {
+        return NextResponse.json(sanitizeRecord(items), {
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
             },

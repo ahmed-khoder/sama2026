@@ -204,6 +204,7 @@ export default function StorageManagementPage() {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [trashCount, setTrashCount] = useState(0);
     const [emptyingTrash, setEmptyingTrash] = useState(false);
+    const [deletingOrphan, setDeletingOrphan] = useState<string | null>(null);
 
     // ── Trash View State ───────────────────────────────────────────
     const [trashFiles, setTrashFiles] = useState<any[]>([]);
@@ -411,6 +412,60 @@ export default function StorageManagementPage() {
             error(isRTL ? 'فشل في حذف الملفات' : 'Failed to delete files');
         } finally {
             setDeleting(false);
+        }
+    };
+
+    // ── Delete Single Orphan ────────────────────────────────────────
+    const handleDeleteSingleOrphan = async (filePath: string) => {
+        const confirmed = await confirm({
+            title: isRTL ? '🗑️ حذف صورة يتيمة' : '🗑️ Delete Orphan File',
+            message: isRTL
+                ? 'هل أنت متأكد من حذف هذه الصورة؟\nهذا الإجراء لا يمكن التراجع عنه.'
+                : 'Are you sure you want to delete this image?\nThis action cannot be undone.',
+            confirmText: isRTL ? 'حذف' : 'Delete',
+            cancelText: isRTL ? 'إلغاء' : 'Cancel',
+            type: 'danger',
+        });
+        if (!confirmed) return;
+
+        setDeletingOrphan(filePath);
+        try {
+            const res = await fetch('/api/admin/cleanup-storage/single', {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filePath }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                if (res.status === 409) {
+                    error(isRTL
+                        ? (data.messageAr || 'لا يمكن حذف هذه الصورة لأنها مستخدمة في النظام')
+                        : (data.message || 'This file is currently used in the system and cannot be deleted'));
+                } else {
+                    throw new Error(data.error || 'Failed');
+                }
+                return;
+            }
+
+            // Remove from local state immediately
+            if (cleanupData) {
+                setCleanupData({
+                    ...cleanupData,
+                    orphans: cleanupData.orphans.filter(f => f !== filePath),
+                    summary: {
+                        ...cleanupData.summary,
+                        orphansFound: cleanupData.summary.orphansFound - 1,
+                    },
+                });
+            }
+            setTrashCount(prev => prev + 1);
+            success(isRTL ? '✅ تم حذف الملف بنجاح' : '✅ File deleted successfully');
+        } catch (err: any) {
+            error(err.message || (isRTL ? 'فشل في الحذف' : 'Delete failed'));
+        } finally {
+            setDeletingOrphan(null);
         }
     };
 
@@ -974,10 +1029,23 @@ export default function StorageManagementPage() {
                                                         </div>
                                                     )}
                                                 </div>
+                                                {/* Delete Button — always visible on mobile, hover on desktop */}
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteSingleOrphan(file); }}
+                                                    disabled={deletingOrphan === file}
+                                                    className="absolute top-2 left-2 z-10 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-600 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm shadow-lg shadow-red-500/25"
+                                                    title={isRTL ? 'حذف' : 'Delete'}
+                                                >
+                                                    {deletingOrphan === file ? (
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    )}
+                                                </button>
                                                 <div className="absolute top-2 right-2">
                                                     <span className="px-1.5 py-0.5 bg-red-500/90 text-white text-[10px] font-bold rounded-md backdrop-blur-sm">{isRTL ? 'يتيم' : 'ORPHAN'}</span>
                                                 </div>
-                                                {isImage(file) && <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><Eye className="w-6 h-6 text-white" /></div>}
+                                                {isImage(file) && <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none"><Eye className="w-6 h-6 text-white" /></div>}
                                                 <div className="p-2">
                                                     <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono" dir="ltr" title={file}>{file.split('/').pop()}</p>
                                                     <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate" dir="ltr">{getFolderLabel(file)}</p>

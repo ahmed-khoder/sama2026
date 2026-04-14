@@ -29,7 +29,15 @@ export async function PUT(
         const data: Record<string, unknown> = {};
         if (rest.nameAr !== undefined) data.nameAr = rest.nameAr;
         if (rest.nameEn !== undefined) data.nameEn = rest.nameEn;
-        if (rest.image !== undefined) data.image = rest.image || null;
+        if (rest.image !== undefined) {
+            if (!rest.image) {
+                return NextResponse.json(
+                    { error: 'Image is required. Cannot save without an image.' },
+                    { status: 400 }
+                );
+            }
+            data.image = rest.image;
+        }
         if (rest.descAr !== undefined) data.descAr = rest.descAr;
         if (rest.descEn !== undefined) data.descEn = rest.descEn;
         if (rest.factsJson !== undefined) data.factsJson = rest.factsJson;

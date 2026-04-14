@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateImageAlt } from '@/lib/image-seo';
 
 interface AccreditationItem {
     id: string;
@@ -103,7 +104,7 @@ export default function AccreditationsManager({ type }: { type: 'home' | 'about'
                         >
                             <Image
                                 src={item.logo}
-                                alt="Certification"
+                                alt={generateImageAlt(item.logo, 'SAMA Logistics certification')}
                                 width={80}
                                 height={50}
                                 className="max-h-[70%] w-auto object-contain
@@ -179,7 +180,7 @@ export default function AccreditationsManager({ type }: { type: 'home' | 'about'
 
                                     <Image
                                         src={item.logo}
-                                        alt="Accreditation"
+                                        alt={generateImageAlt(item.logo, 'SAMA Logistics certification')}
                                         width={160}
                                         height={100}
                                         className="max-h-full w-auto object-contain relative z-10
@@ -257,7 +258,7 @@ export default function AccreditationsManager({ type }: { type: 'home' | 'about'
 
                                     <Image
                                         src={item.logo}
-                                        alt="Certification"
+                                        alt={generateImageAlt(item.logo, 'SAMA Logistics certification')}
                                         width={120}
                                         height={70}
                                         className="max-h-full w-auto object-contain

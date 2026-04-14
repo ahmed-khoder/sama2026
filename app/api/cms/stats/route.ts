@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth-middleware';
 import { heroStatSchema } from '@/lib/validations';
 import { revalidatePath } from 'next/cache';
+import { sanitizeRecord } from '@/lib/sanitize';
 
 // GET all hero stats
 export async function GET() {
@@ -10,7 +11,7 @@ export async function GET() {
         const stats = await prisma.heroStat.findMany({
             orderBy: { order: 'asc' }
         });
-        return NextResponse.json(stats);
+        return NextResponse.json(sanitizeRecord(stats));
     } catch (error: unknown) {
         console.error('Error fetching hero stats:', error);
         return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });

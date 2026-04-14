@@ -664,7 +664,7 @@ export default function AboutPage() {
                                             <motion.img
                                                 key={whyImageIndex}
                                                 src={whyImages[whyImageIndex]?.url}
-                                                alt="Why Choose Us"
+                                                alt="Why choose SAMA Logistics — freight expertise in Port Said"
                                                 initial={{ opacity: 0, scale: 1.1 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 exit={{ opacity: 0, scale: 0.9 }}
@@ -692,7 +692,7 @@ export default function AboutPage() {
                                     <>
                                         <img
                                             src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop"
-                                            alt="Container Port"
+                                            alt="Container port terminal — Port Said, Egypt"
                                             className="w-full h-80 md:h-96 object-cover"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-marine-900/60 to-transparent" />

@@ -4,12 +4,12 @@ import React, { Suspense, lazy } from 'react';
 import DashboardTabs from './components/DashboardTabs';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Lazy-load analytics widget — never blocks page load
-const AnalyticsWidget = lazy(() => import('./components/AnalyticsWidget'));
+// Lazy-load conversion widget — never blocks page load
+const ConversionCompactWidget = lazy(() => import('./components/ConversionCompactWidget'));
 
 export default function Dashboard() {
   const { hasPermission } = useAuth();
-  const canViewAnalytics = hasPermission('view_analytics');
+  const canViewConversions = hasPermission('view_conversion_analytics');
 
   return (
     <div className="space-y-8">
@@ -32,8 +32,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Website Analytics Widget — Permission: view_analytics */}
-      {canViewAnalytics && (
+      {/* Conversion Analytics — Compact (Permission: view_conversion_analytics) */}
+      {canViewConversions && (
         <Suspense fallback={
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 animate-pulse">
             <div className="h-6 bg-gray-200 dark:bg-slate-700 rounded w-40 mb-4" />
@@ -45,7 +45,7 @@ export default function Dashboard() {
           </div>
         }>
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm">
-            <AnalyticsWidget />
+            <ConversionCompactWidget />
           </div>
         </Suspense>
       )}
@@ -55,3 +55,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

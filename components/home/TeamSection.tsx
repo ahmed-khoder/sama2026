@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Linkedin, Twitter } from 'lucide-react';
+import { resolveTeamImage, TEAM_AVATAR_FALLBACK } from '@/lib/imageUtils';
 
 interface TeamMember {
     nameAr: string;
@@ -45,7 +46,7 @@ const PersonCard = React.memo(({
                 style={{ contain: 'layout style paint' }}
             >
                 <img
-                    src={member.image}
+                    src={resolveTeamImage(member.image)}
                     alt={name}
                     className="absolute inset-0 w-full h-full object-cover object-top"
                     loading="lazy"
@@ -53,7 +54,7 @@ const PersonCard = React.memo(({
                     onError={(e) => {
                         const target = e.currentTarget;
                         target.onerror = null;
-                        target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 400' fill='%23cbd5e1'%3E%3Crect width='300' height='400' fill='%23e2e8f0'/%3E%3Ccircle cx='150' cy='140' r='55' fill='%23cbd5e1'/%3E%3Cellipse cx='150' cy='300' rx='80' ry='70' fill='%23cbd5e1'/%3E%3C/svg%3E";
+                        target.src = TEAM_AVATAR_FALLBACK;
                         target.classList.remove('object-top');
                         target.classList.add('object-center');
                     }}

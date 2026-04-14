@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth-middleware';
 import { revalidatePath } from 'next/cache';
+import { sanitizeUrl, sanitizeString } from '@/lib/sanitize';
 
 const BRANDING_KEYS = [
     'logo_default',
@@ -26,13 +27,13 @@ export async function GET() {
         }
 
         return NextResponse.json({
-            logoDefault: map['logo_default'] || null,
-            logoOccasion: map['logo_occasion'] || null,
-            logoAnimated: map['logo_animated'] || null,
+            logoDefault: sanitizeUrl(map['logo_default']),
+            logoOccasion: sanitizeUrl(map['logo_occasion']),
+            logoAnimated: sanitizeUrl(map['logo_animated']),
             occasionMode: map['occasion_mode'] === 'true',
             animationEnabled: map['animation_enabled'] === 'true',
-            occasionLabelAr: map['occasion_label_ar'] || '',
-            occasionLabelEn: map['occasion_label_en'] || '',
+            occasionLabelAr: sanitizeString(map['occasion_label_ar']),
+            occasionLabelEn: sanitizeString(map['occasion_label_en']),
         });
     } catch (error) {
         console.error('Error fetching branding:', error);

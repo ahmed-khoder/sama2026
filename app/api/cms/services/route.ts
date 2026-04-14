@@ -5,6 +5,7 @@ import { handleAPIError, Errors } from '@/lib/api-error-handler';
 import { createServiceSchema } from '@/lib/validations';
 import { revalidatePath } from 'next/cache';
 import { linkMedia } from '@/lib/media-library';
+import { sanitizeRecord } from '@/lib/sanitize';
 
 
 // الخدمات الافتراضية
@@ -158,7 +159,7 @@ export async function GET(request: NextRequest) {
             features: JSON.parse(s.featuresJson || '[]')
         }));
 
-        return NextResponse.json(parsed);
+        return NextResponse.json(sanitizeRecord(parsed));
     } catch (error: unknown) {
         console.error('Error fetching services:', error);
         return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 });

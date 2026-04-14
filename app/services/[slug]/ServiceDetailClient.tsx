@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { getSmartPhoneHref, getSmartPhoneProps } from '@/lib/smart-phone';
+import { trackEvent, trackConversion } from '@/components/GoogleAnalytics';
 
 
 // Icon mapping
@@ -52,6 +54,13 @@ export default function ServiceDetailClient({
     const isMobile = useIsMobile();
 
     const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'process'>('overview');
+
+    // Smart phone: tel on mobile, WhatsApp on desktop
+    const smartPhoneHref = getSmartPhoneHref(
+        '+201221300036',
+        isRTL ? 'مرحباً، أريد الاستفسار عن خدماتكم' : 'Hi, I want to inquire about your services'
+    );
+    const smartPhoneProps = getSmartPhoneProps();
 
     // If somehow service is missing
     if (!service) {
@@ -331,13 +340,17 @@ export default function ServiceDetailClient({
                                 <div className="space-y-3">
                                     <Link
                                         href="/contact"
+                                        onClick={() => trackEvent('quote_click', { page: service.slug, location: 'sidebar' })}
                                         className="flex items-center justify-center gap-2 w-full py-4 bg-white text-brand-orange font-bold rounded-xl hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl"
                                     >
                                         <Mail className="w-5 h-5" />
                                         {isRTL ? 'راسلنا' : 'Email Us'}
                                     </Link>
                                     <a
-                                        href="tel:+201234567890"
+                                        href={smartPhoneHref}
+                                        {...smartPhoneProps}
+                                        onClick={() => { trackEvent('call_click', { page: service.slug, location: 'sidebar' }); setTimeout(() => { if (document.hasFocus()) trackConversion('call_intent', { page: service.slug, location: 'sidebar' }); }, 3000); }}
+                                        aria-label={isRTL ? 'اتصل بنا' : 'Call Us'}
                                         className="flex items-center justify-center gap-2 w-full py-4 bg-white/20 hover:bg-white/30 text-white font-bold rounded-xl transition-all backdrop-blur-sm border border-white/30"
                                     >
                                         <Phone className="w-5 h-5" />
