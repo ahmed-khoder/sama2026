@@ -27,6 +27,8 @@ export async function PUT(
         if (rest.descAr !== undefined) data.descAr = rest.descAr;
         if (rest.descEn !== undefined) data.descEn = rest.descEn;
         if (rest.gradient !== undefined) data.gradient = rest.gradient;
+        if (rest.image !== undefined) data.image = rest.image;
+        if (rest.slug !== undefined) data.slug = rest.slug || null;
         if (rest.order !== undefined) data.order = rest.order;
         if (rest.isActive !== undefined) data.isActive = rest.isActive;
 

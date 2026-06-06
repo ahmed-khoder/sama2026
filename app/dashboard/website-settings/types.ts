@@ -495,6 +495,8 @@ export const getTabCategories = (isRTL: boolean) => [
             { id: 'services-fleet', labelAr: 'أسطول الشاحنات', labelEn: 'Fleet Showcase' },
             { id: 'services-ports', labelAr: 'عمليات الموانئ', labelEn: 'Port Operations' },
             { id: 'services-cargo', labelAr: 'البضائع المتخصصة', labelEn: 'Specialized Cargo' },
+            { id: 'marble-page', labelAr: 'صفحة الرخام', labelEn: 'Marble Page' },
+            { id: 'industrial-page', labelAr: 'صفحة النقل الصناعي', labelEn: 'Industrial Page' },
         ]
     },
     {

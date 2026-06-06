@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Ship, Info, Phone, Menu, X, Moon, Sun, Newspaper, LogOut, LayoutDashboard, User, Building2, Briefcase } from 'lucide-react';
+// START FIX — removed unused: Building2
+import { Home, Ship, Info, Phone, Menu, X, Moon, Sun, Newspaper, LogOut, LayoutDashboard, User, Briefcase } from 'lucide-react';
+// END FIX
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,16 +34,17 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // START FIX — useRef instead of useState to avoid re-render on every scroll
+  const lastScrollYRef = useRef(0);
+  // END FIX
   const { language, toggleLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
-  // Smart scroll for show/hide navbar (throttled with rAF)
+  // START FIX — stable scroll handler, no dependency on state
   useEffect(() => {
     let ticking = false;
-    let lastY = lastScrollY;
 
     const handleScroll = () => {
       if (ticking) return;
@@ -49,6 +52,7 @@ export default function Navbar() {
 
       requestAnimationFrame(() => {
         const currentScrollY = window.scrollY;
+        const lastY = lastScrollYRef.current;
 
         if (currentScrollY < 50) {
           setIsVisible(true);
@@ -59,15 +63,15 @@ export default function Navbar() {
           setIsUserMenuOpen(false);
         }
 
-        lastY = currentScrollY;
-        setLastScrollY(currentScrollY);
+        lastScrollYRef.current = currentScrollY;
         ticking = false;
       });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
+  // END FIX
 
   // Close mobile menu on resize
   useEffect(() => {
@@ -124,11 +128,14 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                       className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-gray-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:bg-white hover:shadow-md transition-all"
                     >
+                      {/* START FIX — avatar fallback */}
                       <img
-                        src={user.avatar}
+                        src={user.avatar || '/images/default-avatar.png'}
                         alt={user.name}
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/images/default-avatar.png'; }}
                         className="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-600"
                       />
+                      {/* END FIX */}
                       <span className="text-sm font-bold text-marine-900 dark:text-white max-w-[100px] truncate">
                         {user.name}
                       </span>
@@ -160,13 +167,15 @@ export default function Navbar() {
                                 <LayoutDashboard className="w-4 h-4" />
                                 {t('dashboard') || (language === 'ar' ? 'لوحة التحكم' : 'Dashboard')}
                               </Link>
+                              {/* START FIX — async-safe logout */}
                               <button
-                                onClick={() => {
-                                  logout();
+                                onClick={async () => {
                                   setIsUserMenuOpen(false);
+                                  try { await logout(); } catch (e) { console.error('Logout failed:', e); }
                                 }}
                                 className="flex items-center gap-3 w-full p-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                               >
+                              {/* END FIX */}
                                 <LogOut className="w-4 h-4" />
                                 {t('logout') || (language === 'ar' ? 'تسجيل الخروج' : 'Logout')}
                               </button>
@@ -310,7 +319,9 @@ export default function Navbar() {
                 {user && (
                   <div className="p-4 bg-marine-50/50 dark:bg-slate-800/30 border-b border-gray-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-3 mb-3">
-                      <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full border border-white dark:border-slate-700 shadow-sm" />
+                      {/* START FIX — mobile avatar fallback */}
+                      <img src={user.avatar || '/images/default-avatar.png'} alt={user.name} onError={(e) => { (e.target as HTMLImageElement).src = '/images/default-avatar.png'; }} className="w-10 h-10 rounded-full border border-white dark:border-slate-700 shadow-sm" />
+                      {/* END FIX */}
                       <div>
                         <p className="font-bold text-marine-900 dark:text-white text-sm">{user.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">{user.email}</p>
@@ -367,13 +378,15 @@ export default function Navbar() {
                   {user && (
                     <>
                       <hr className="my-4 border-gray-100 dark:border-slate-800" />
+                      {/* START FIX — async-safe mobile logout */}
                       <button
-                        onClick={() => {
-                          logout();
+                        onClick={async () => {
                           setIsOpen(false);
+                          try { await logout(); } catch (e) { console.error('Logout failed:', e); }
                         }}
                         className="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors w-full"
                       >
+                      {/* END FIX */}
                         <LogOut className="w-5 h-5" />
                         <span className="font-medium">{t('logout') || (language === 'ar' ? 'تسجيل الخروج' : 'Logout')}</span>
                       </button>

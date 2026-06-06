@@ -50,6 +50,9 @@ export const viewport: Viewport = {
 
 // Comprehensive SEO Metadata
 export const metadata: Metadata = {
+  // Base URL for resolving relative OG/Twitter image paths
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://samalogistics.com'),
+
   // Basic Metadata
   title: {
     default: 'SAMA Logistics',

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
+import { getMarbleTransportContent } from '@/lib/data/marble-transport.data';
 import MarbleTransportClient from './MarbleTransportClient';
 
 // ─── Dynamic bilingual SEO metadata ───
@@ -28,14 +29,26 @@ export async function generateMetadata(): Promise<Metadata> {
             description,
             type: 'website',
             url: 'https://samalogistics.com/services/marble-transport',
+            images: [
+                {
+                    url: '/og-image.jpg',
+                    width: 1200,
+                    height: 630,
+                    alt: isArabic ? 'نقل الرخام والمواد المحجرية - سما لوجيستك' : 'Marble & Quarry Transport - SAMA Logistics',
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: ['/og-image.jpg'],
         },
         alternates: {
             canonical: 'https://samalogistics.com/services/marble-transport',
         },
     };
 }
-
-export const revalidate = 300;
 
 // ─── Schema.org Structured Data ───
 function getSchemaJsonLd(isArabic: boolean) {
@@ -138,6 +151,9 @@ export default async function MarbleTransportPage() {
     const acceptLang = headerStore.get('accept-language') || '';
     const isArabic = langCookie === 'ar' || (!langCookie && acceptLang.startsWith('ar'));
 
+    // Fetch validated CMS data via the data pipeline (cached + tag-based revalidation)
+    const content = await getMarbleTransportContent();
+
     const schemas = getSchemaJsonLd(isArabic);
 
     return (
@@ -149,7 +165,7 @@ export default async function MarbleTransportPage() {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
                 />
             ))}
-            <MarbleTransportClient />
+            <MarbleTransportClient content={content} />
         </>
     );
 }

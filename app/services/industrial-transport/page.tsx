@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
 import IndustrialTransportClient from './IndustrialTransportClient';
+import { getIndustrialTransportContent } from '@/lib/data/industrial-transport.data';
 
 // ─── Dynamic bilingual SEO metadata ───
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,14 +29,26 @@ export async function generateMetadata(): Promise<Metadata> {
             description,
             type: 'website',
             url: 'https://samalogistics.com/services/industrial-transport',
+            images: [
+                {
+                    url: '/og-image.jpg',
+                    width: 1200,
+                    height: 630,
+                    alt: isArabic ? 'نقل حاويات المصانع والقطاع الصناعي - سما لوجيستك' : 'Factory & Industrial Transport - SAMA Logistics',
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: ['/og-image.jpg'],
         },
         alternates: {
             canonical: 'https://samalogistics.com/services/industrial-transport',
         },
     };
 }
-
-export const revalidate = 300;
 
 // ─── Schema.org Structured Data ───
 function getSchemaJsonLd(isArabic: boolean) {
@@ -152,6 +165,7 @@ export default async function IndustrialTransportPage() {
     const isArabic = langCookie === 'ar' || (!langCookie && acceptLang.startsWith('ar'));
 
     const schemas = getSchemaJsonLd(isArabic);
+    const content = await getIndustrialTransportContent();
 
     return (
         <>
@@ -163,7 +177,8 @@ export default async function IndustrialTransportPage() {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
                 />
             ))}
-            <IndustrialTransportClient />
+            <IndustrialTransportClient content={content} />
         </>
     );
 }
+

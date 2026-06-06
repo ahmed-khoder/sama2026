@@ -6,3 +6,5 @@ export { ServicesStatsTab } from './ServicesStatsTab';
 export { FleetTab } from './FleetTab';
 export { PortsTab } from './PortsTab';
 export { CargoTab } from './CargoTab';
+export { MarblePageTab } from './MarblePageTab';
+export { IndustrialPageTab } from './IndustrialPageTab';

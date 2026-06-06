@@ -14,16 +14,42 @@ export async function generateMetadata(): Promise<Metadata> {
     const acceptLang = headerStore.get('accept-language') || '';
     const isArabic = langCookie === 'ar' || (!langCookie && acceptLang.startsWith('ar'));
 
+    const title = isArabic
+        ? 'خدمات النقل اللوجستي ونقل الحاويات في بورسعيد'
+        : 'Freight, Customs & Transport Services in Port Said';
+    const description = isArabic
+        ? 'خدمات احترافية في نقل الحاويات والشحن والتخليص الجمركي في بورسعيد. حلول لوجستية سريعة وآمنة وموثوقة من شركة سما لوجيستك.'
+        : 'Sea freight, land transport, customs clearance, warehousing, and cargo insurance from Port Said, Egypt. Explore SAMA Logistics services.';
+
     return {
-        title: isArabic
-            ? 'خدمات النقل اللوجستي ونقل الحاويات في بورسعيد'
-            : 'Freight, Customs & Transport Services in Port Said',
-        description: isArabic
-            ? 'خدمات احترافية في نقل الحاويات والشحن والتخليص الجمركي في بورسعيد. حلول لوجستية سريعة وآمنة وموثوقة من شركة سما لوجيستك.'
-            : 'Sea freight, land transport, customs clearance, warehousing, and cargo insurance from Port Said, Egypt. Explore SAMA Logistics services.',
+        title,
+        description,
         keywords: isArabic
-            ? 'نقل حاويات مصر, شركة لوجستية بورسعيد, شحن بحري مصر, تخليص جمركي, خدمات شحن'
-            : 'container transport Egypt, logistics company Port Said, freight forwarding Egypt, customs clearance Egypt, shipping services Egypt',
+            ? 'نقل حاويات مصر, شركة لوجستية بورسعيد, شحن بحري مصر, تخليص جمركي, خدمات شحن, خدمات لوجستية, تخزين, توزيع'
+            : 'container transport Egypt, logistics company Port Said, freight forwarding Egypt, customs clearance Egypt, shipping services Egypt, logistics services, warehousing, distribution',
+        openGraph: {
+            title,
+            description,
+            type: 'website',
+            url: 'https://samalogistics.com/services',
+            images: [
+                {
+                    url: '/og-image.jpg',
+                    width: 1200,
+                    height: 630,
+                    alt: isArabic ? 'خدمات سما لوجيستك اللوجستية' : 'SAMA Logistics Services',
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: ['/og-image.jpg'],
+        },
+        alternates: {
+            canonical: 'https://samalogistics.com/services',
+        },
     };
 }
 

@@ -474,6 +474,7 @@ export default function ServicesPageClient({ initialServices, initialFleet, init
                                 'Factory & Industrial Container Transport': '/services/industrial-transport',
                             };
                             const cargoLink = cargoRoutes[cargo.titleEn] || null;
+                            const isHeroCard = cargoLink === '/services/container-transport';
 
                             // Content-aware background images for cargo cards
                             const cargoBackgrounds: Record<string, string> = {
@@ -481,20 +482,31 @@ export default function ServicesPageClient({ initialServices, initialFleet, init
                                 'Port Container Transport': '/images/cargo/port-containers.jpg',
                                 'Factory & Industrial Container Transport': '/images/cargo/industrial-factory.jpg',
                             };
-                            const cargoBg = cargoBackgrounds[cargo.titleEn] || '';
+                            const cargoBg = cargo.image || cargoBackgrounds[cargo.titleEn] || '';
 
                             const cardContent = (
                                 <motion.div
-                                    className={`group relative rounded-3xl p-5 md:p-9 bg-slate-800
-                                                border border-white/20
-                                                shadow-[0_2px_20px_-4px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_20px_-4px_rgba(0,0,0,0.4)]
+                                    className={`group relative rounded-3xl ${isHeroCard ? 'p-6 md:p-10' : 'p-5 md:p-9'} bg-slate-800
+                                                ${isHeroCard ? 'hero-card-glow' : 'border border-white/20'}
+                                                ${isHeroCard
+                                            ? 'shadow-[0_10px_40px_-4px_rgba(249,115,22,0.25)]'
+                                            : 'shadow-[0_2px_20px_-4px_rgba(0,0,0,0.15)] dark:shadow-[0_2px_20px_-4px_rgba(0,0,0,0.4)]'}
                                                 hover:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.25)] dark:hover:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.6)]
                                                 hover:border-brand-orange/30
                                                 transition-all duration-500 ease-out overflow-hidden h-full flex flex-col
                                                 ${cargoLink ? 'cursor-pointer' : ''}`}
-                                    whileHover={{ y: -6 }}
+                                    whileHover={{ y: isHeroCard ? -12 : -6 }}
                                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                                 >
+                                    {/* Hero Badge — Most Popular */}
+                                    {isHeroCard && (
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 px-4 py-1 md:px-5 md:py-1.5 rounded-b-lg bg-gradient-to-r from-brand-orange to-amber-500 text-white text-[10px] md:text-xs font-bold tracking-wide shadow-lg shadow-brand-orange/25">
+                                            <span className="flex items-center gap-1.5">
+                                                <Sparkles className="w-3 h-3" />
+                                                {isRTL ? 'الأكثر طلبًا' : 'Most Popular'}
+                                            </span>
+                                        </div>
+                                    )}
                                     {/* Background image + overlay */}
                                     {cargoBg && (
                                         <div className="absolute inset-0 pointer-events-none">
@@ -504,22 +516,22 @@ export default function ServicesPageClient({ initialServices, initialFleet, init
                                     )}
 
                                     {/* Decorative top accent */}
-                                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${cargo.gradient || cargo.color} pointer-events-none`} />
+                                    <div className={`absolute top-0 left-0 right-0 ${isHeroCard ? 'h-1.5' : 'h-1'} bg-gradient-to-r ${isHeroCard ? 'from-brand-orange via-amber-400 to-brand-orange' : (cargo.gradient || cargo.color)} pointer-events-none`} />
 
                                     <div className="flex items-start justify-between mb-4 md:mb-7 relative">
-                                        <div className={`w-11 h-11 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${cargo.gradient || cargo.color}
+                                        <div className={`service-icon w-11 h-11 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${cargo.gradient || cargo.color}
                                                          flex items-center justify-center shadow-md
                                                          group-hover:scale-105 group-hover:shadow-lg transition-all duration-500`}>
                                             <CargoIcon className="w-5 h-5 md:w-7 md:h-7 text-white" />
                                         </div>
-                                        <span className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-[11px] font-bold tracking-wide text-white
+                                        <span className={`service-badge px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-[11px] font-bold tracking-wide text-white
                                                           bg-gradient-to-r ${cargo.gradient || cargo.color} shadow-sm`}>
                                             {isRTL ? cargo.badgeAr : cargo.badgeEn}
                                         </span>
                                     </div>
 
-                                    <h3 className="text-base md:text-xl font-bold tracking-tight text-white mb-2 md:mb-3
-                                                   group-hover:text-brand-orange transition-colors duration-300 relative drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+                                    <h3 className={`${isHeroCard ? 'text-lg md:text-2xl' : 'text-base md:text-xl'} font-bold tracking-tight text-white mb-2 md:mb-3
+                                                   group-hover:text-brand-orange transition-colors duration-300 relative drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]`}>
                                         {isRTL ? cargo.titleAr : cargo.titleEn}
                                     </h3>
                                     <p className="text-white/85 leading-relaxed text-sm font-normal flex-grow relative line-clamp-2 md:line-clamp-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
@@ -542,9 +554,10 @@ export default function ServicesPageClient({ initialServices, initialFleet, init
                                 <motion.div
                                     key={idx}
                                     initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
+                                    whileInView={{ opacity: 1, y: isHeroCard ? -10 : 0, scale: isHeroCard ? 1.10 : 0.97 }}
                                     viewport={{ once: true }}
-                                    transition={{ delay: idx * 0.15 }}
+                                    transition={{ delay: idx * 0.15, type: 'spring', stiffness: 200, damping: 20 }}
+                                    className={isHeroCard ? 'relative z-10' : ''}
                                 >
                                     {cargoLink ? (
                                         <Link href={cargoLink} className="block h-full">

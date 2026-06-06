@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
                 descAr: body.descAr || '',
                 descEn: body.descEn || '',
                 gradient: body.gradient || 'from-sky-500 to-blue-600',
+                image: body.image || null,
+                slug: body.slug || null,
                 order: body.order ?? 0,
             }
         });

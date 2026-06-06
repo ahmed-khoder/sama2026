@@ -14,124 +14,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import { getSmartPhoneHref, getSmartPhoneProps, getWhatsAppHref } from '@/lib/smart-phone';
 import { trackEvent, trackConversion } from '@/components/GoogleAnalytics';
+import type { MarbleTransportContent } from '@/lib/schemas/marble-transport.schema';
 
 // ─── WhatsApp Config ──────────────────────────────────────
 const WHATSAPP_NUMBER = '201221300036';
 
-// ─── Static Content (Bilingual Copywriting) ──────────────
-const content = {
-    hero: {
-        badgeAr: 'متخصصون في نقل المواد المحجرية والتعدينية',
-        badgeEn: 'Specialized in Quarry & Mining Transport',
-        titleLine1Ar: 'نقل الرخام والمواد المحجرية والتعدينية',
-        titleLine1En: 'Marble, Quarry & Mining',
-        titleLine2Ar: 'بأعلى درجات الأمان',
-        titleLine2En: 'Transport — Maximum Safety',
-        descAr: 'نقل الرخام والجرانيت وجميع المواد المحجرية من مواقع الإنتاج مثل شق الثعبان إلى مواقع العمل باستخدام أسطول متخصص للأحمال الثقيلة.',
-        descEn: 'Marble, granite, and all quarry materials transport from production sites like Shaq El-Tue\'ban to worksites using a specialized heavy-load fleet.',
-    },
-    stats: [
-        { valueAr: '+25', valueEn: '25+', labelAr: 'سنة خبرة', labelEn: 'Years Experience' },
-        { valueAr: '60', valueEn: '60', labelAr: 'طن أقصى حمولة', labelEn: 'Ton Max Load' },
-        { valueAr: '+1000', valueEn: '1000+', labelAr: 'شحنة منجزة', labelEn: 'Shipments Completed' },
-        { valueAr: '0%', valueEn: '0%', labelAr: 'نسبة تلف', labelEn: 'Damage Rate' },
-    ],
-    painPoints: [
-        {
-            icon: AlertTriangle,
-            titleAr: 'تلف الأحمال أثناء النقل',
-            titleEn: 'Cargo Damage During Transport',
-            descAr: 'الرخام والجرانيت مواد حساسة رغم ثقلها. نستخدم تقنيات تثبيت متقدمة وفرق تحميل متخصصة تضمن وصول الشحنة بدون أي خدش.',
-            descEn: 'Marble and granite are fragile despite their weight. We use advanced securing techniques and specialized loading teams to ensure scratch-free delivery.',
-        },
-        {
-            icon: Weight,
-            titleAr: 'صعوبة تحميل الأحجار الثقيلة',
-            titleEn: 'Difficulty Loading Heavy Stones',
-            descAr: 'التحميل العشوائي يسبب كسر وتلف. فريقنا مدرب على التعامل مع البلوكات والألواح الثقيلة باستخدام معدات مناسبة.',
-            descEn: 'Random loading causes breakage and damage. Our team is trained to handle heavy blocks and slabs using proper equipment.',
-        },
-        {
-            icon: Clock,
-            titleAr: 'تأخير التسليم',
-            titleEn: 'Delivery Delays',
-            descAr: 'مشاريع البناء تعتمد على مواعيد محددة. أي تأخير يكلف المقاول خسائر. نلتزم بالمواعيد المتفق عليها بنسبة 98%.',
-            descEn: 'Construction projects depend on precise schedules. Any delay costs the contractor losses. We maintain a 98% on-time delivery rate.',
-        },
-        {
-            icon: HardHat,
-            titleAr: 'نقص الخبرة في التعامل مع المواد الثقيلة',
-            titleEn: 'Lack of Heavy Materials Expertise',
-            descAr: 'شركات النقل العادية لا تفهم طبيعة المواد المحجرية. لدينا 25 سنة خبرة في شق الثعبان ومناطق المحاجر.',
-            descEn: 'Regular transport companies don\'t understand quarry materials. We have 25 years of experience at Shaq El-Tue\'ban and quarry zones.',
-        },
-    ],
-    whyUs: [
-        {
-            icon: Mountain,
-            titleAr: 'خبرة في شق الثعبان والمحاجر',
-            titleEn: 'Shaq El-Tue\'ban & Quarry Expertise',
-            descAr: 'نعمل في شق الثعبان ومناطق المحاجر منذ أكثر من 25 سنة. نعرف كل طريق وكل تحدي.',
-            descEn: 'We\'ve been operating in Shaq El-Tue\'ban and quarry zones for over 25 years. We know every route and every challenge.',
-        },
-        {
-            icon: Truck,
-            titleAr: 'أسطول مخصص للأوزان الثقيلة',
-            titleEn: 'Fleet Specialized for Heavy Loads',
-            descAr: 'شاحنات مجهزة خصيصاً لنقل أحمال تصل إلى 60 طن — مع نظام تثبيت احترافي يحمي كل شحنة.',
-            descEn: 'Trucks specially equipped for loads up to 60 tons — with professional securing systems that protect every shipment.',
-        },
-        {
-            icon: Shield,
-            titleAr: 'تأمين عالي أثناء النقل',
-            titleEn: 'Premium Transport Insurance',
-            descAr: 'تأمين شامل على كل شحنة رخام ومواد محجرية. راحة البال من لحظة التحميل حتى التسليم.',
-            descEn: 'Comprehensive insurance on every marble and quarry shipment. Peace of mind from loading to delivery.',
-        },
-        {
-            icon: Clock,
-            titleAr: 'التزام بالمواعيد',
-            titleEn: 'On-Time Commitment',
-            descAr: 'نسبة التزام 98% بالمواعيد. مشروعك لن يتأخر بسبب النقل.',
-            descEn: '98% on-time delivery rate. Your project won\'t be delayed because of transport.',
-        },
-    ],
-    services: [
-        {
-            icon: Gem,
-            titleAr: 'نقل رخام وجرانيت',
-            titleEn: 'Marble & Granite Transport',
-            descAr: 'نقل ألواح وبلوكات الرخام والجرانيت بعناية فائقة من المصانع والمحاجر إلى مواقع التركيب ومعارض البيع.',
-            descEn: 'Careful transport of marble and granite slabs and blocks from factories and quarries to installation sites and showrooms.',
-        },
-        {
-            icon: Mountain,
-            titleAr: 'نقل مواد محجرية',
-            titleEn: 'Quarry Materials Transport',
-            descAr: 'نقل الحجر الجيري والبازلت والرمال والكسر من المحاجر إلى مواقع البناء والمصانع.',
-            descEn: 'Transport of limestone, basalt, sand, and aggregate from quarries to construction sites and factories.',
-        },
-        {
-            icon: Hammer,
-            titleAr: 'نقل خامات تعدين',
-            titleEn: 'Mining Materials Transport',
-            descAr: 'نقل الخامات التعدينية من مواقع الاستخراج إلى المصانع ومراكز المعالجة عبر جميع المحافظات.',
-            descEn: 'Transport of mining materials from extraction sites to factories and processing centers across all governorates.',
-        },
-        {
-            icon: Weight,
-            titleAr: 'نقل أحمال ثقيلة',
-            titleEn: 'Heavy Load Transport',
-            descAr: 'نقل الأحمال الثقيلة غير النمطية (حتى 60 طن) بشاحنات مخصصة وتصاريح خاصة وفريق عمليات محترف.',
-            descEn: 'Non-standard heavy load transport (up to 60 tons) with specialized trucks, special permits, and a professional operations team.',
-        },
-    ],
-    trust: [
-        { valueAr: '+25', valueEn: '25+', labelAr: 'سنة في نقل المحاجر', labelEn: 'Years in Quarry Transport', icon: Award },
-        { valueAr: '20+', valueEn: '20+', labelAr: 'شاحنة ثقيلة مجهزة', labelEn: 'Equipped Heavy Trucks', icon: Truck },
-        { valueAr: '+1000', valueEn: '1000+', labelAr: 'مشروع بناء وتشطيب', labelEn: 'Construction Projects Served', icon: Users },
-        { valueAr: '60', valueEn: '60', labelAr: 'طن أقصى حمولة', labelEn: 'Ton Max Payload', icon: Weight },
-    ],
+// ─── Static Content (sections not managed by CMS) ─────────
+const staticContent = {
+    painPointIcons: [AlertTriangle, Weight, Clock, HardHat],
+    whyUsIcons: [Mountain, Truck, Shield, Clock],
+    serviceIcons: [Gem, Mountain, Hammer, Weight],
+    trustIcons: [Award, Truck, Users, Weight],
     areas: [
         { ar: 'شق الثعبان', en: 'Shaq El-Tue\'ban' },
         { ar: 'العين السخنة', en: 'Ain Sokhna' },
@@ -156,8 +49,43 @@ const fadeUp = {
 // ═══════════════════════════════════════════════════════════
 //  CLIENT COMPONENT
 // ═══════════════════════════════════════════════════════════
-export default function MarbleTransportClient() {
+export default function MarbleTransportClient({ content }: { content: MarbleTransportContent }) {
     const { language } = useLanguage();
+
+    // ── CMS data arrives pre-validated with fallbacks from the server pipeline ──
+    const cms = content;
+
+    // ── Attach icons to CMS data (icons can't be serialized from server) ──
+    const painPoints = cms.problems.items.map((p, i) => ({
+        ...p,
+        icon: staticContent.painPointIcons[i] || AlertTriangle,
+    }));
+    const whyUs = cms.features.cards.map((w, i) => ({
+        ...w,
+        icon: staticContent.whyUsIcons[i] || Shield,
+    }));
+    const solutions = cms.solutions.map((s, i) => ({
+        ...s,
+        icon: staticContent.serviceIcons[i] || Package,
+    }));
+    const trust = cms.trust.map((t, i) => ({
+        ...t,
+        icon: staticContent.trustIcons[i] || Award,
+    }));
+
+    // ── Hero image + overlay effects from CMS ──
+    const resolvedHeroImage = cms.hero.image;
+    const overlayOpacity = cms.hero.overlayOpacity;
+    const heroBlur = cms.hero.blurAmount;
+    const overlayColor = cms.hero.overlayColor;
+    const getOverlayColor = (color: string) => {
+        switch (color) {
+            case 'orange': return 'rgba(249,115,22,0.6)';
+            case 'dark': return 'rgba(0,0,0,0.6)';
+            default: return 'rgba(3,105,161,0.6)';
+        }
+    };
+
     const isRTL = language === 'ar';
     const whatsappUrl = getWhatsAppHref(
         WHATSAPP_NUMBER,
@@ -213,16 +141,18 @@ export default function MarbleTransportClient() {
                     className="absolute inset-0"
                     animate={{ scale: [1, 1.08, 1] }}
                     transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{ filter: heroBlur > 0 ? `blur(${heroBlur}px)` : undefined }}
                 >
                     <Image
-                        src="/images/fleet/1772066646569-ggbkgl.webp"
+                        src={resolvedHeroImage}
                         alt={t('شاحنات نقل رخام ومواد محجرية', 'Marble and quarry materials transport trucks')}
                         fill
-                        className="object-cover opacity-20"
+                        className="object-cover"
                         priority
                         sizes="100vw"
                     />
                 </motion.div>
+                <div className="absolute inset-0" style={{ backgroundColor: getOverlayColor(overlayColor), opacity: overlayOpacity }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-marine-950/80 via-marine-900/40 to-transparent" />
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-orange/10 rounded-full blur-[200px]" />
                 <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-marine-500/15 rounded-full blur-[150px]" />
@@ -237,7 +167,7 @@ export default function MarbleTransportClient() {
                         >
                             <Mountain className="w-4 h-4 text-brand-orange" />
                             <span className="text-sm font-semibold tracking-wide">
-                                {t(content.hero.badgeAr, content.hero.badgeEn)}
+                                {t(cms.hero.badgeAr, cms.hero.badgeEn)}
                             </span>
                         </motion.div>
 
@@ -248,11 +178,11 @@ export default function MarbleTransportClient() {
                             className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
                         >
                             <span className="text-white">
-                                {t(content.hero.titleLine1Ar, content.hero.titleLine1En)}
+                                {t(cms.hero.titleLine1Ar, cms.hero.titleLine1En)}
                             </span>
                             <br />
                             <span className="text-brand-orange">
-                                {t(content.hero.titleLine2Ar, content.hero.titleLine2En)}
+                                {t(cms.hero.titleLine2Ar, cms.hero.titleLine2En)}
                             </span>
                         </motion.h1>
 
@@ -262,7 +192,7 @@ export default function MarbleTransportClient() {
                             transition={{ delay: 0.5 }}
                             className="text-lg md:text-xl text-white/80 mb-10 leading-relaxed max-w-2xl font-normal"
                         >
-                            {t(content.hero.descAr, content.hero.descEn)}
+                            {t(cms.hero.descAr, cms.hero.descEn)}
                         </motion.p>
 
                         <motion.div
@@ -301,7 +231,7 @@ export default function MarbleTransportClient() {
             <section className="relative z-10 -mt-8 md:-mt-10 pb-8">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                        {content.stats.map((stat, idx) => (
+                        {cms.stats.map((stat, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ scale: 0.8, opacity: 0 }}
@@ -330,7 +260,7 @@ export default function MarbleTransportClient() {
                             {t('تحديات نقل المواد المحجرية', 'Quarry Transport Challenges')}
                         </span>
                         <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
-                            {t('مشاكل تكلف المقاولين خسائر كبيرة', 'Problems Costing Contractors Major Losses')}
+                            {t(cms.problems.sectionTitleAr, cms.problems.sectionTitleEn)}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg max-w-2xl mx-auto font-normal">
                             {t('كل شحنة تالفة أو متأخرة تعني خسارة مادية. هكذا نحل هذه المشاكل.', 'Every damaged or delayed shipment means financial loss. Here\'s how we solve these problems.')}
@@ -338,7 +268,7 @@ export default function MarbleTransportClient() {
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-5">
-                        {content.painPoints.map((pain, idx) => (
+                        {painPoints.map((pain, idx) => (
                             <motion.div
                                 key={idx}
                                 custom={idx}
@@ -382,7 +312,7 @@ export default function MarbleTransportClient() {
                 <div className="container mx-auto px-4 relative z-10">
                     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
                         <span className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange rounded-full text-sm font-semibold mb-4">
-                            {t('لماذا سما لوجيستك؟', 'Why SAMA Logistics?')}
+                            {t(cms.features.sectionTitleAr, cms.features.sectionTitleEn)}
                         </span>
                         <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
                             {t('الشريك الأمثل لنقل المواد المحجرية', 'The Ideal Partner for Quarry Materials Transport')}
@@ -393,7 +323,7 @@ export default function MarbleTransportClient() {
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                        {content.whyUs.map((item, idx) => (
+                        {whyUs.map((item, idx) => (
                             <motion.div
                                 key={idx}
                                 custom={idx}
@@ -437,7 +367,7 @@ export default function MarbleTransportClient() {
                             </h3>
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            {content.areas.map((area, idx) => (
+                            {staticContent.areas.map((area, idx) => (
                                 <motion.span
                                     key={idx}
                                     initial={{ opacity: 0, scale: 0.8 }}
@@ -471,7 +401,7 @@ export default function MarbleTransportClient() {
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                        {content.services.map((service, idx) => (
+                        {solutions.map((service, idx) => (
                             <motion.article
                                 key={idx}
                                 custom={idx}
@@ -520,7 +450,7 @@ export default function MarbleTransportClient() {
                     </motion.div>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                        {content.trust.map((item, idx) => (
+                        {trust.map((item, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, y: 30 }}

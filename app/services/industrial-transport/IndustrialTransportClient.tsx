@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import { getSmartPhoneHref, getSmartPhoneProps, getWhatsAppHref } from '@/lib/smart-phone';
 import { trackEvent, trackConversion } from '@/components/GoogleAnalytics';
+import type { MarbleTransportContent } from '@/lib/schemas/marble-transport.schema';
 
 // ─── WhatsApp Config ──────────────────────────────────────
 const WHATSAPP_NUMBER = '201221300036';
@@ -144,6 +145,14 @@ const content = {
     ],
 };
 
+// ─── Icons (not serializable, attached at render) ────────
+const staticContent = {
+    painPointIcons: [Clock, Cog, AlertTriangle, CalendarClock],
+    whyUsIcons: [Truck, Factory, Clock, MapPin],
+    serviceIcons: [Container, Boxes, MapPin, CalendarClock],
+    trustIcons: [Award, Truck, Users, MapPin],
+};
+
 // ─── Animation Variants ──────────────────────────────────
 const fadeUp = {
     hidden: { opacity: 0, y: 30 },
@@ -156,7 +165,7 @@ const fadeUp = {
 // ═══════════════════════════════════════════════════════════
 //  CLIENT COMPONENT
 // ═══════════════════════════════════════════════════════════
-export default function IndustrialTransportClient() {
+export default function IndustrialTransportClient({ content: cms }: { content: MarbleTransportContent }) {
     const { language } = useLanguage();
     const isRTL = language === 'ar';
     const whatsappUrl = getWhatsAppHref(
@@ -210,16 +219,22 @@ export default function IndustrialTransportClient() {
             <header className="relative min-h-[80vh] flex items-center overflow-hidden">
                 {/* Background layers */}
                 <div className="absolute inset-0 bg-gradient-to-br from-marine-900 via-marine-800 to-slate-900" />
-                <div className="absolute inset-0">
+                <motion.div
+                    className="absolute inset-0"
+                    animate={{ scale: [1, 1.08, 1] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{ filter: cms.hero.blurAmount > 0 ? `blur(${cms.hero.blurAmount}px)` : undefined }}
+                >
                     <Image
-                        src="/images/fleet/1772066646569-ggbkgl.webp"
+                        src={cms.hero.image}
                         alt={t('شاحنات نقل حاويات في منطقة صناعية', 'Container transport trucks at industrial zone')}
                         fill
-                        className="object-cover opacity-25"
+                        className="object-cover"
                         priority
                         sizes="100vw"
                     />
-                </div>
+                </motion.div>
+                <div className="absolute inset-0" style={{ backgroundColor: cms.hero.overlayColor === 'orange' ? 'rgba(249,115,22,0.6)' : cms.hero.overlayColor === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(3,105,161,0.6)', opacity: cms.hero.overlayOpacity }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-marine-950/80 via-marine-900/40 to-transparent" />
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-orange/10 rounded-full blur-[200px]" />
                 <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-marine-500/15 rounded-full blur-[150px]" />
@@ -235,7 +250,7 @@ export default function IndustrialTransportClient() {
                         >
                             <Factory className="w-4 h-4 text-brand-orange" />
                             <span className="text-sm font-semibold tracking-wide">
-                                {t(content.hero.badgeAr, content.hero.badgeEn)}
+                                {t(cms.hero.badgeAr, cms.hero.badgeEn)}
                             </span>
                         </motion.div>
 
@@ -247,11 +262,11 @@ export default function IndustrialTransportClient() {
                             className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
                         >
                             <span className="text-white">
-                                {t(content.hero.titleLine1Ar, content.hero.titleLine1En)}
+                                {t(cms.hero.titleLine1Ar, cms.hero.titleLine1En)}
                             </span>
                             <br />
                             <span className="text-brand-orange">
-                                {t(content.hero.titleLine2Ar, content.hero.titleLine2En)}
+                                {t(cms.hero.titleLine2Ar, cms.hero.titleLine2En)}
                             </span>
                         </motion.h1>
 
@@ -262,7 +277,7 @@ export default function IndustrialTransportClient() {
                             transition={{ delay: 0.5 }}
                             className="text-lg md:text-xl text-white/80 mb-10 leading-relaxed max-w-2xl font-normal"
                         >
-                            {t(content.hero.descAr, content.hero.descEn)}
+                            {t(cms.hero.descAr, cms.hero.descEn)}
                         </motion.p>
 
                         {/* CTA Buttons */}
@@ -302,7 +317,7 @@ export default function IndustrialTransportClient() {
             <section className="relative z-10 -mt-8 md:-mt-10 pb-8">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                        {content.stats.map((stat, idx) => (
+                        {cms.stats.map((stat, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ scale: 0.8, opacity: 0 }}
@@ -342,7 +357,7 @@ export default function IndustrialTransportClient() {
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-5">
-                        {content.painPoints.map((pain, idx) => (
+                        {cms.problems.items.map((pain, idx) => {const PainIcon = staticContent.painPointIcons[idx] || AlertTriangle; return (
                             <motion.div
                                 key={idx}
                                 custom={idx}
@@ -354,7 +369,7 @@ export default function IndustrialTransportClient() {
                             >
                                 <div className="flex items-center gap-3 mb-3">
                                     <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-                                        <pain.icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                                        <PainIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                                     </div>
                                     <h3 className="text-base font-semibold text-slate-800 dark:text-white">
                                         {t(pain.titleAr, pain.titleEn)}
@@ -369,7 +384,7 @@ export default function IndustrialTransportClient() {
                                     </div>
                                 </div>
                             </motion.div>
-                        ))}
+                        );})}
                     </div>
                 </div>
             </section>
@@ -400,7 +415,7 @@ export default function IndustrialTransportClient() {
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                        {content.whyUs.map((item, idx) => (
+                        {cms.features.cards.map((item, idx) => {const WhyIcon = staticContent.whyUsIcons[idx] || Shield; return (
                             <motion.div
                                 key={idx}
                                 custom={idx}
@@ -413,7 +428,7 @@ export default function IndustrialTransportClient() {
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-brand-orange rounded-t-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-start gap-4 md:gap-5">
                                     <div className="w-13 h-13 md:w-16 md:h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center group-hover:bg-brand-orange transition-all duration-300 flex-shrink-0 shadow-sm">
-                                        <item.icon className="w-7 h-7 md:w-8 md:h-8 text-brand-orange group-hover:text-white transition-colors" />
+                                        <WhyIcon className="w-7 h-7 md:w-8 md:h-8 text-brand-orange group-hover:text-white transition-colors" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white mb-2 group-hover:text-brand-orange transition-colors">
@@ -425,7 +440,7 @@ export default function IndustrialTransportClient() {
                                     </div>
                                 </div>
                             </motion.div>
-                        ))}
+                        );})}
                     </div>
 
                     {/* Industrial Zones Coverage */}
@@ -478,7 +493,7 @@ export default function IndustrialTransportClient() {
                     </motion.div>
 
                     <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                        {content.services.map((service, idx) => (
+                        {cms.solutions.map((service, idx) => {const SvcIcon = staticContent.serviceIcons[idx] || Package; return (
                             <motion.article
                                 key={idx}
                                 custom={idx}
@@ -491,7 +506,7 @@ export default function IndustrialTransportClient() {
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-brand-orange rounded-t-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-start gap-4 md:gap-5">
                                     <div className="w-13 h-13 md:w-16 md:h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center group-hover:bg-brand-orange transition-all duration-300 flex-shrink-0 shadow-sm">
-                                        <service.icon className="w-7 h-7 md:w-8 md:h-8 text-brand-orange group-hover:text-white transition-colors" />
+                                        <SvcIcon className="w-7 h-7 md:w-8 md:h-8 text-brand-orange group-hover:text-white transition-colors" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white mb-2 group-hover:text-brand-orange transition-colors">
@@ -503,7 +518,7 @@ export default function IndustrialTransportClient() {
                                     </div>
                                 </div>
                             </motion.article>
-                        ))}
+                        );})}
                     </div>
                 </div>
             </section>
@@ -529,7 +544,7 @@ export default function IndustrialTransportClient() {
 
                     {/* Trust Stats Grid */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
-                        {content.trust.map((item, idx) => (
+                        {cms.trust.map((item, idx) => {const TrustIcon = staticContent.trustIcons[idx] || Award; return (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, y: 30 }}
@@ -539,14 +554,14 @@ export default function IndustrialTransportClient() {
                                 className="group text-center p-6 md:p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 hover:border-white/20 transition-all duration-300"
                             >
                                 <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-5 bg-brand-orange/15 rounded-2xl flex items-center justify-center group-hover:bg-brand-orange transition-all duration-300">
-                                    <item.icon className="w-6 h-6 md:w-8 md:h-8 text-brand-orange group-hover:text-white transition-colors" />
+                                    <TrustIcon className="w-6 h-6 md:w-8 md:h-8 text-brand-orange group-hover:text-white transition-colors" />
                                 </div>
                                 <AnimatedCounter value={t(item.valueAr, item.valueEn)} className="text-3xl md:text-4xl font-black text-brand-orange mb-2" />
                                 <p className="text-xs md:text-sm text-gray-300 font-medium">
                                     {t(item.labelAr, item.labelEn)}
                                 </p>
                             </motion.div>
-                        ))}
+                        );})}
                     </div>
 
                     {/* Fleet Images */}

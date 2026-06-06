@@ -29,6 +29,20 @@ export async function generateMetadata(): Promise<Metadata> {
             description,
             type: 'website',
             url: 'https://samalogistics.com/services/container-transport',
+            images: [
+                {
+                    url: '/og-image.jpg',
+                    width: 1200,
+                    height: 630,
+                    alt: isArabic ? 'نقل الحاويات من بورسعيد - سما لوجيستك' : 'Container Transport Port Said - SAMA Logistics',
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: ['/og-image.jpg'],
         },
         alternates: {
             canonical: 'https://samalogistics.com/services/container-transport',

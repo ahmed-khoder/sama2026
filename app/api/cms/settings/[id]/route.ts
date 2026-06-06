@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth-middleware';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 // PUT - Update setting (Admin only)
 export async function PUT(
@@ -22,6 +22,8 @@ export async function PUT(
         });
 
         revalidatePath('/', 'layout');
+        revalidateTag('marble-transport');
+        revalidateTag('industrial-transport');
         return NextResponse.json(setting);
     } catch (error: unknown) {
         console.error('Error updating setting:', error);
@@ -46,6 +48,8 @@ export async function DELETE(
         });
 
         revalidatePath('/', 'layout');
+        revalidateTag('marble-transport');
+        revalidateTag('industrial-transport');
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
         console.error('Error deleting setting:', error);

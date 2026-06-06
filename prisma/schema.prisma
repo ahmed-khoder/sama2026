@@ -723,6 +723,8 @@ model SpecializedCargo {
   descAr    String   @default("")
   descEn    String   @default("")
   gradient  String   @default("from-sky-500 to-blue-600")
+  slug      String?  @unique  // URL slug for linking to service pages (e.g. "marble-transport")
+  image     String?  // Optional hero image — overrides static cargoBackgrounds
   order     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

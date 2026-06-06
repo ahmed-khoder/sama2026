@@ -4,7 +4,7 @@ import Script from "next/script";
 import { canMakePhoneCalls } from "@/lib/smart-phone";
 
 // ─── GA4 Measurement ID ──────────────────────────────────
-const GA_ID = "G-33C7XZ028K";
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-33C7XZ028K";
 
 // ─── Typed Conversion Events ─────────────────────────────
 export type ConversionEvent =

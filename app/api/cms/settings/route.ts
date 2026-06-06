@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth-middleware';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
         });
 
         revalidatePath('/', 'layout');
+        revalidateTag('marble-transport');
+        revalidateTag('industrial-transport');
         return NextResponse.json(setting, { status: 201 });
     } catch (error: unknown) {
         console.error('Error creating setting:', error);

@@ -37,6 +37,8 @@ import {
     FleetTab,
     PortsTab,
     CargoTab,
+    MarblePageTab,
+    IndustrialPageTab,
 } from './components/tabs/services';
 import { MilestonesTab, AboutHeroTab, AboutStylingTab, AboutContentTab, WhyChooseUsTab } from './components/tabs/about';
 import { CareersHeroTab, CareersStylingTab, CareersContentTab } from './components/tabs/careers';
@@ -396,6 +398,10 @@ export default function WebsiteSettingsPage() {
                     />
                 );
 
+            case 'marble-page':
+                return <MarblePageTab />;
+            case 'industrial-page':
+                return <IndustrialPageTab />;
             // About tabs
             case 'about-hero':
                 return (

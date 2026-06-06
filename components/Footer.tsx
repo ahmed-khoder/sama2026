@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   Ship, Mail, Phone, MapPin,
-  ArrowRight, ArrowLeft, Sparkles, Send, Check, CheckCircle, Award, ChevronDown, Copy
+  // START FIX — removed unused: Sparkles, Send, CheckCircle, Award, ChevronDown
+  ArrowRight, ArrowLeft, Check, Copy
+  // END FIX
 } from 'lucide-react';
 
 // ══════════════════════════════════════════════════════════════
@@ -193,37 +195,78 @@ function QuickLinksColumn({ isRTL, language, t }: { isRTL: boolean; language: st
   );
 }
 
+// START FIX — Static marketing services (never depends on dashboard isActive)
+const FALLBACK_SERVICES = [
+  { id: 'fb-1', slug: 'container-transport', titleAr: 'الشحن البحري', titleEn: 'Sea Freight' },
+  { id: 'fb-2', slug: 'industrial-transport', titleAr: 'النقل البري', titleEn: 'Land Transport' },
+  { id: 'fb-3', slug: 'marble-transport', titleAr: 'الشحن الجوي', titleEn: 'Air Freight' },
+  { id: 'fb-4', slug: 'customs-clearance', titleAr: 'التخليص الجمركي', titleEn: 'Customs Clearance' },
+];
+// END FIX
+
 // Services Column - Dynamic from API with caching
 function ServicesColumn({ isRTL, language, t }: { isRTL: boolean; language: string; t: any }) {
-  const [services, setServices] = useState<any[]>([]);
+  // START FIX — initialize with fallback + add loading state
+  const [services, setServices] = useState<any[]>(FALLBACK_SERVICES);
+  const [loading, setLoading] = useState(true);
+  // END FIX
 
   useEffect(() => {
+    // START FIX — AbortController to prevent memory leak on unmount
+    const controller = new AbortController();
+    // END FIX
+
     // Check sessionStorage cache first (5 min TTL)
     try {
       const cached = sessionStorage.getItem('footer_services');
       if (cached) {
         const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < 5 * 60 * 1000) {
+        // START FIX — validate cached data is a non-empty array
+        if (Date.now() - timestamp < 5 * 60 * 1000 && Array.isArray(data) && data.length > 0) {
           setServices(data);
+          setLoading(false);
           return;
         }
+        // END FIX
       }
-    } catch { }
+    } catch {
+      // START FIX — corrupted cache: remove it silently
+      try { sessionStorage.removeItem('footer_services'); } catch { }
+      // END FIX
+    }
 
-    fetch('/api/cms/services')
-      .then(res => res.json())
+    // START FIX — use API data directly without isActive filter (footer = marketing, not dashboard)
+    fetch('/api/cms/services', { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
-        const activeServices = data.filter((s: any) => s.isActive);
-        setServices(activeServices);
+        if (!Array.isArray(data)) throw new Error('Invalid response');
+        // Use all services from API (no isActive filter)
+        if (data.length > 0) {
+          setServices(data);
+        }
         // Cache for 5 minutes
         try {
           sessionStorage.setItem('footer_services', JSON.stringify({
-            data: activeServices,
+            data: data.length > 0 ? data : FALLBACK_SERVICES,
             timestamp: Date.now()
           }));
         } catch { }
       })
-      .catch(err => console.error('Error loading services:', err));
+    // END FIX
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        console.error('Error loading services:', err);
+        // Fallback already set via useState initializer
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+    // END FIX
   }, []);
 
   return (
