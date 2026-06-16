@@ -155,6 +155,8 @@ export interface SpecializedCargoItem {
     descAr: string;
     descEn: string;
     gradient: string;
+    image?: string;
+    slug?: string;
     order: number;
     isActive: boolean;
 }
