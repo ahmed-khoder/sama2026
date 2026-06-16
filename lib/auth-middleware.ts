@@ -13,6 +13,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: string;
+  permissions: string;
 }
 
 /**
@@ -50,6 +51,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<AuthUser | n
         name: true,
         role: true,
         isActive: true,
+        permissions: true,
       },
     });
 
@@ -62,6 +64,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<AuthUser | n
       email: user.email,
       name: user.name || '',
       role: user.role,
+      permissions: user.permissions,
     };
   } catch {
     return null;
